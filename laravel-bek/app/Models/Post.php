@@ -27,6 +27,6 @@ class Post extends Model
 
     public function images()
 {
-    return $this->hasMany(PostImages::class)->orderBy('redosled');
+    return $this->hasMany(PostImage::class)->orderBy('redosled');
 }
 }
