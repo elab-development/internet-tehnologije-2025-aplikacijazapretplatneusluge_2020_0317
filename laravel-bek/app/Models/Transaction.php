@@ -13,6 +13,7 @@ class Transaction extends Model
 
     public function subscription()
     {
+
         return $this->belongsTo(Subscription::class);
     }
 }

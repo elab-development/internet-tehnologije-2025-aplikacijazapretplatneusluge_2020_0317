@@ -54,7 +54,7 @@ class User extends Authenticatable
     //svaki korisnik moze biti samo jedan kreator
     public function creator()
     {
-        return $this->hasOne(Creator::class);
+        return $this->hasOne(Creator::class, 'korisnik_id');
     }
 
     //korisnik moze imati vise pretplata

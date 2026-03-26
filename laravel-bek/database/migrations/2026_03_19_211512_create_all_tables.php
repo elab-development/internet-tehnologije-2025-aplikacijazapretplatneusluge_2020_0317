@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('sublevels', function (Blueprint $table) {
+        Schema::create('sub_levels', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('kreator_id');
             $table->string('naziv');
@@ -72,7 +72,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('creators');
-        Schema::dropIfExists('sublevels');
+        Schema::dropIfExists('sub_levels');
         Schema::dropIfExists('subscriptions');
         Schema::dropIfExists('transactions');
         Schema::dropIfExists('posts');

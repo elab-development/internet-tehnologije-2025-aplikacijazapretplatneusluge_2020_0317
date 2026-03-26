@@ -17,7 +17,7 @@ class Post extends Model
 
     public function creator()
     {
-        return $this->belongsTo(Creator::class);
+        return $this->belongsTo(Creator::class, 'kreator_id');
     }
 
     public function subLevelReq()
@@ -26,7 +26,7 @@ class Post extends Model
     }
 
     public function images()
-{
-    return $this->hasMany(PostImage::class)->orderBy('redosled');
-}
+    {
+        return $this->hasMany(PostImage::class, 'objava_id')->orderBy('redosled');
+    }
 }

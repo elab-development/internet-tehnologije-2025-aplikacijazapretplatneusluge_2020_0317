@@ -25,12 +25,37 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'name' => $this->faker->name(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'email_verified_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'password' => Hash::make('password'),  // svi dobijaju istu lozinku radi testiranja
+            'tip' => $this->faker->randomElement(['patron', 'kreator', 'oba']),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    // Stanje: korisnik je samo kreator
+    public function kreator()
+    {
+        return $this->state(fn (array $attributes) => [
+            'tip' => 'kreator',
+        ]);
+    }
+
+    // Stanje: korisnik je samo patron
+    public function patron()
+    {
+        return $this->state(fn (array $attributes) => [
+            'tip' => 'patron',
+        ]);
+    }
+
+    // Stanje: korisnik je i kreator i patron
+    public function oba()
+    {
+        return $this->state(fn (array $attributes) => [
+            'tip' => 'oba',
+        ]);
     }
 
     /**

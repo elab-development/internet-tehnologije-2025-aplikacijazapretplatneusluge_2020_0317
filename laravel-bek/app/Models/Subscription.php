@@ -23,7 +23,7 @@ class Subscription extends Model
 
     public function creator()
     {
-        return $this->belongsTo(Creator::class);
+        return $this->belongsTo(Creator::class, 'kreator_id');
     }
 
     public function subLevel()
@@ -33,6 +33,6 @@ class Subscription extends Model
 
     public function transaction()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Transaction::class, 'pretplata_id');
     }
 }

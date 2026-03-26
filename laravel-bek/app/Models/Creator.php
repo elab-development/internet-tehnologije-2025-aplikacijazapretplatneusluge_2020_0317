@@ -19,16 +19,16 @@ class Creator extends Model
 
     public function subLevels()
     {
-        return $this->hasMany(SubLevel::class);
+        return $this->hasMany(SubLevel::class, 'kreator_id');
     }
 
     public function posts()
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(Post::class, 'kreator_id');
     }
 
     public function subscribers()
     {
-        return $this->hasMany(Subscription::class);
+        return $this->hasMany(Subscription::class, 'kreator_id');
     }
 }

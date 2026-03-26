@@ -17,7 +17,7 @@ return new class extends Migration
             // 'opis' ostaje nullable (tako je i zamišljeno)
         });
 
-        Schema::table('sublevels', function (Blueprint $table) {
+        Schema::table('sub_levels', function (Blueprint $table) {
             $table->unsignedBigInteger('kreator_id')->nullable(false)->change();
             $table->string('naziv')->nullable(false)->change();
             $table->decimal('cena_mesecno', 8, 2)->nullable(false)->change();
@@ -64,7 +64,7 @@ return new class extends Migration
             $table->unsignedBigInteger('korisnik_id')->nullable()->change();
             $table->string('naziv_stranice')->nullable()->change();
         });
-        Schema::table('sublevels', function (Blueprint $table) {
+        Schema::table('sub_levels', function (Blueprint $table) {
             $table->unsignedBigInteger('kreator_id')->nullable()->change();
             $table->string('naziv')->nullable()->change();
             $table->decimal('cena_mesecno', 8, 2)->nullable()->change();

@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SubLevel extends Model
 {
+    protected $table = 'sub_levels';
     use HasFactory;
     protected $fillable = ['kreator_id', 'naziv', 'cena_mesecno', 'opis'];
 
     public function creator()
     {
-        return $this->belongsTo(Creator::class);
+        return $this->belongsTo(Creator::class, 'kreator_id');
     }
 
     public function subscriptions()

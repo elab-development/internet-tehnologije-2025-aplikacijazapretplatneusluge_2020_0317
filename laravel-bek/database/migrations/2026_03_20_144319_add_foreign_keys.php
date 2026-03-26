@@ -15,13 +15,13 @@ return new class extends Migration
             $table->foreign('korisnik_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        Schema::table('sublevels', function (Blueprint $table) {
+        Schema::table('sub_levels', function (Blueprint $table) {
             $table->foreign('kreator_id')->references('id')->on('creators')->onDelete('cascade');
         });
         Schema::table('subscriptions', function (Blueprint $table) {
             $table->foreign('patron_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('kreator_id')->references('id')->on('creators')->onDelete('cascade');
-            $table->foreign('nivo_id')->references('id')->on('sublevels')->onDelete('set null');
+            $table->foreign('nivo_id')->references('id')->on('sub_levels')->onDelete('set null');
         });
 
         Schema::table('transactions', function (Blueprint $table) {
@@ -30,7 +30,7 @@ return new class extends Migration
 
         Schema::table('posts', function (Blueprint $table) {
             $table->foreign('kreator_id')->references('id')->on('creators')->onDelete('cascade');
-            $table->foreign('nivo_pristupa_id')->references('id')->on('sublevels')->onDelete('set null');
+            $table->foreign('nivo_pristupa_id')->references('id')->on('sub_levels')->onDelete('set null');
         });
 
         Schema::table('postimages', function (Blueprint $table) {
@@ -62,7 +62,7 @@ return new class extends Migration
             $table->dropForeign(['nivo_id']);
         });
 
-        Schema::table('sublevels', function (Blueprint $table) {
+        Schema::table('sub_levels', function (Blueprint $table) {
             $table->dropForeign(['kreator_id']);
         });
         
