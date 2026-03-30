@@ -24,7 +24,7 @@ class SubscriptionSeeder extends Seeder
         }
 
         // Napravi 40 pretplata
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 40; $i++) {
             $patron = $patroni->random();
             $kreator = $kreatori->random();
 
