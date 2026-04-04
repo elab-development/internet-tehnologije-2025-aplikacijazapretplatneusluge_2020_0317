@@ -33,7 +33,7 @@ return new class extends Migration
             $table->foreign('nivo_pristupa_id')->references('id')->on('sub_levels')->onDelete('set null');
         });
 
-        Schema::table('postimages', function (Blueprint $table) {
+        Schema::table('post_images', function (Blueprint $table) {
             $table->foreign('objava_id')->references('id')->on('posts')->onDelete('cascade');
         });
     }
@@ -43,7 +43,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('postimages', function (Blueprint $table) {
+        Schema::table('post_images', function (Blueprint $table) {
             $table->dropForeign(['objava_id']);
         });
 

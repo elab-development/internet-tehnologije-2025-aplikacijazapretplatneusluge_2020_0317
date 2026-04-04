@@ -47,7 +47,7 @@ return new class extends Migration
             // nivo_pristupa_id ostaje nullable
         });
 
-        Schema::table('postimages', function (Blueprint $table) {
+        Schema::table('post_images', function (Blueprint $table) {
             $table->unsignedBigInteger('objava_id')->nullable(false)->change();
             $table->string('putanja')->nullable(false)->change();
             $table->integer('redosled')->nullable(false)->change();
@@ -88,7 +88,7 @@ return new class extends Migration
             $table->timestamp('datum_objave')->nullable()->change();
             $table->string('pristup')->nullable()->change();
         });
-        Schema::table('postimages', function (Blueprint $table) {
+        Schema::table('post_images', function (Blueprint $table) {
             $table->unsignedBigInteger('objava_id')->nullable()->change();
             $table->string('putanja')->nullable()->change();
             $table->integer('redosled')->nullable()->change();

@@ -26,7 +26,7 @@ return new class extends Migration
             $table->timestamp('datum_objave')->default(DB::raw('CURRENT_TIMESTAMP'))->change();
         });
 
-        Schema::table('postimages', function (Blueprint $table) {
+        Schema::table('post_images', function (Blueprint $table) {
             $table->integer('redosled')->default(0)->change();
         });
 
@@ -50,7 +50,7 @@ return new class extends Migration
             $table->string('pristup')->default(null)->change();
             $table->timestamp('datum_objave')->default(null)->change();
         });
-        Schema::table('postimages', function (Blueprint $table) {
+        Schema::table('post_images', function (Blueprint $table) {
             $table->integer('redosled')->default(0)->change(); // vrati na 0, ali u suštini ne vraćamo
         });
     }
