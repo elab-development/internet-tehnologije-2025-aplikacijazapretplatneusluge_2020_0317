@@ -44,4 +44,90 @@ class PostController extends Controller
 
         return new PostResource($post);
     }
+
+    public function store(Request $request, $creatorId)
+    {
+        $user = $request->user();
+        $creator = Creator::findOrFail($creatorId);
+
+        if ($user->creator->id !== $creator->id) {
+            return response()->json(['message' => 'Nemate dozvolu.'], 403);
+        }
+
+        $validated = $request->validate([
+            'naslov' => 'required|string|max:255',
+            'sadrzaj' => 'required|string',
+            'pristup' => 'required|in:javno,pretplatnici,nivo',
+            'nivo_pristupa_id' => 'nullable|exists:sub_levels,id',
+        ]);
+
+        if ($validated['pristup'] === 'nivo' && !isset($validated['nivo_pristupa_id'])){
+            return response()->json(['message' => 'Objava nema selektovan nivo pretplate!'], 422);
+        }
+        // Optionally ensure the nivo belongs to this creator
+        if ($validated['pristup'] === 'nivo' && $validated['nivo_pristupa_id']) {
+            $tierBelongsToCreator = $creator->subLevels()->where('id', $validated['nivo_pristupa_id'])->exists();
+            if (!$tierBelongsToCreator) {
+                return response()->json(['message' => 'Izabrani nivo ne pripada ovom kreatoru.'], 422);
+            }
+        }
+
+        $post = $creator->posts()->create($validated);
+
+        return response()->json([
+            'message' => 'Objava uspešno kreirana.',
+            'post' => new PostResource($post->load('images')),
+        ], 201);
+    }
+
+    public function update(Request $request, $postId)
+    {
+        $user = $request->user();
+        $post = Post::findOrFail($postId);
+
+        if ($user->creator->id !== $post->creator->id) {
+            return response()->json(['message' => 'Nemate dozvolu.'], 403);
+        }
+
+        $validated = $request->validate([
+            'naslov' => 'sometimes|string|max:255',
+            'sadrzaj' => 'sometimes|string',
+            'pristup' => 'sometimes|in:javno,pretplatnici,nivo',
+            'nivo_pristupa_id' => 'nullable|exists:sub_levels,id',
+        ]);
+
+        if ($validated['pristup'] === 'nivo' && !isset($validated['nivo_pristupa_id'])){
+            return response()->json(['message' => 'Objava nema selektovan nivo pretplate!'], 422);
+        }
+        // If changing to nivo, ensure the tier belongs to this creator
+        if (isset($validated['pristup']) && $validated['pristup'] === 'nivo' && isset($validated['nivo_pristupa_id'])) {
+            $tierBelongsToCreator = $post->creator->subLevels()->where('id', $validated['nivo_pristupa_id'])->exists();
+            if (!$tierBelongsToCreator) {
+                return response()->json(['message' => 'Izabrani nivo ne pripada ovom kreatoru.'], 422);
+            }
+        }
+
+        $post->update($validated);
+
+        return response()->json([
+            'message' => 'Objava uspešno ažurirana.',
+            'post' => new PostResource($post->load('images')),
+        ], 200);
+    }
+
+    public function destroy(Request $request, $postId)
+    {
+        $user = $request->user();
+        $post = Post::findOrFail($postId);
+
+        if ($user->creator->id !== $post->creator->id) {
+            return response()->json(['message' => 'Nemate dozvolu.'], 403);
+        }
+
+        $post->delete();
+
+        return response()->json([
+            'message' => 'Objava uspešno obrisana.',
+        ], 200);
+    }
 }
