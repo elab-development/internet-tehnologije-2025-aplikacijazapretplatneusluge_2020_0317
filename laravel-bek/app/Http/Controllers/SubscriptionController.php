@@ -17,7 +17,10 @@ class SubscriptionController extends Controller
     public function store(Request $request, $creatorId)
     {
         $user = $request->user();
-        $creator = Creator::findOrFail($creatorId);
+        $creator = Creator::find($creatorId);
+        if (!$creator) {
+            return response()->json(['poruka' => "Kreator nije pronadjen",], 404);
+        }
 
         // Prevent subscribing to yourself (if user is also a creator)
         if ($user->creator && $user->creator->id === $creator->id) {
@@ -78,7 +81,10 @@ class SubscriptionController extends Controller
     public function destroy(Request $request, $creatorId)
     {
         $user = $request->user();
-        $creator = Creator::findOrFail($creatorId);
+        $creator = Creator::find($creatorId);
+        if (!$creator) {
+            return response()->json(['poruka' => "Kreator nije pronadjen",], 404);
+        }
 
         $subscription = Subscription::where('patron_id', $user->id)
             ->where('kreator_id', $creator->id)
@@ -114,7 +120,10 @@ class SubscriptionController extends Controller
     {
         $subscription = Subscription::with(['creator.user', 'subLevel'])
             ->where('patron_id', $request->user()->id)
-            ->findOrFail($id);
+            ->find($id);
+        if (!$subscription) {
+            return response()->json(['poruka' => "Pretplata nije pronadjena",], 404);
+        }
 
         return new SubscriptionResource($subscription);
     }
@@ -127,7 +136,10 @@ class SubscriptionController extends Controller
         $user = $request->user();
         $subscription = Subscription::where('patron_id', $user->id)
             ->where('status', 'aktivna')
-            ->findOrFail($id);
+            ->find($id);
+        if (!$subscription) {
+            return response()->json(['poruka' => "Pretplata nije pronadjena",], 404);
+        }
 
         $validated = $request->validate([
             'nivo_id' => 'nullable|exists:sub_levels,id',

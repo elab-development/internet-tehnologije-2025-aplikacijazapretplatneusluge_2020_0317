@@ -9,6 +9,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AdminController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -52,6 +53,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::get('/transactions/earnings', [TransactionController::class, 'earnings']);
+
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/users', [AdminController::class, 'users']);
+        Route::put('/admin/users/{id}/role', [AdminController::class, 'updateUserRole']);
+        Route::delete('/admin/users/{id}', [AdminController::class, 'destroyUser']);
+        Route::get('/admin/creators', [AdminController::class, 'creators']);
+        Route::put('/admin/creators/{id}/status', [AdminController::class, 'updateCreator']);
+        Route::get('/admin/stats', [AdminController::class, 'stats']);
+    });
 });
 
 

@@ -48,7 +48,10 @@ class PostController extends Controller
     public function store(Request $request, $creatorId)
     {
         $user = $request->user();
-        $creator = Creator::findOrFail($creatorId);
+        $creator = Creator::find($creatorId);
+        if (!$creator) {
+            return response()->json(['message' => 'Kreator ne postoji.'], 404);
+        }
 
         if ($user->creator->id !== $creator->id) {
             return response()->json(['message' => 'Nemate dozvolu.'], 403);
@@ -83,7 +86,10 @@ class PostController extends Controller
     public function update(Request $request, $postId)
     {
         $user = $request->user();
-        $post = Post::findOrFail($postId);
+        $post = Post::find($postId);
+        if (!$post) {
+            return response()->json(['message' => 'Objava ne postoji.'], 404);
+        }
 
         if ($user->creator->id !== $post->creator->id) {
             return response()->json(['message' => 'Nemate dozvolu.'], 403);
@@ -118,7 +124,10 @@ class PostController extends Controller
     public function destroy(Request $request, $postId)
     {
         $user = $request->user();
-        $post = Post::findOrFail($postId);
+        $post = Post::find($postId);
+        if (!$post) {
+            return response()->json(['message' => 'Objava ne postoji.'], 404);
+        }
 
         if ($user->creator->id !== $post->creator->id) {
             return response()->json(['message' => 'Nemate dozvolu.'], 403);

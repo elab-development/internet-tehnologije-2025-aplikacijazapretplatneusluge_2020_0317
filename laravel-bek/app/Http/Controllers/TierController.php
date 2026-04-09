@@ -17,7 +17,7 @@ class TierController extends Controller
     {
         $creator = Creator::find($id);
         if (!$creator) {
-            return response()->json(['message' => 'Kreator nije pronadjen'], 403);
+            return response()->json(['message' => 'Kreator nije pronadjen'], 404);
         }
         $sublvls = $creator->subLevels()->get();
         return response()->json([
@@ -32,7 +32,10 @@ class TierController extends Controller
     public function store(Request $request, $creatorId)
     {
         $user = $request->user();
-        $creator = Creator::findOrFail($creatorId);
+        $creator = Creator::find($creatorId);
+        if (!$creator) {
+            return response()->json(['message' => 'Kreator nije pronadjen'], 404);
+        }
 
         // Authorization: only the creator owner can add tiers
         if ($user->creator->id !== $creator->id) {
@@ -67,7 +70,10 @@ class TierController extends Controller
     public function update(Request $request, $tierId)
     {
         $user = $request->user();
-        $tier = SubLevel::findOrFail($tierId);
+        $tier = SubLevel::find($tierId);
+        if (!$tier) {
+            return response()->json(['message' => 'Nivo pretplate nije pronadjen'], 404);
+        }
 
         // Check ownership via creator relationship
         if ($user->creator->id !== $tier->creator->id) {
@@ -94,7 +100,10 @@ class TierController extends Controller
     public function destroy(Request $request, $tierId)
     {
         $user = $request->user();
-        $tier = SubLevel::findOrFail($tierId);
+        $tier = SubLevel::find($tierId);
+        if (!$tier) {
+            return response()->json(['message' => 'Nivo pretplate nije pronadjen'], 404);
+        }
 
         if ($user->creator->id !== $tier->creator->id) {
             return response()->json(['message' => 'Nemate dozvolu.'], 403);
