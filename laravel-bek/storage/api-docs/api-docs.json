@@ -253,10 +253,814 @@
                     }
                 ]
             }
+        },
+        "/api/creators": {
+            "get": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Lista svih kreatora",
+                "description": "Display a listing of creators.",
+                "operationId": "753a0278e0284c75ccb713234ebe31cc",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Broj rezultata po stranici",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitani kreatori",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "kreatori": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CreatorResource"
+                                            }
+                                        },
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Uspesno usitani svi kreatori"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/creators/{id}": {
+            "get": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Pojedinačni kreator",
+                "description": "Display the specified creator.",
+                "operationId": "5a79490e1f4bf24227773ee19ee26020",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID kreatora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitani kreator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "kreator": {
+                                            "$ref": "#/components/schemas/CreatorResource"
+                                        },
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Uspesno ucitan kreator"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kreator nije pronađen",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Kreator nije pronadjen"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/creators/profile": {
+            "put": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Ažuriranje profila kreatora",
+                "description": "Samo kreator može ažurirati sopstveni profil.",
+                "operationId": "0ac316a7f0367f703cd08aa5e187801e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "naziv_stranice": {
+                                        "type": "string",
+                                        "example": "Moj novi naziv"
+                                    },
+                                    "opis": {
+                                        "type": "string",
+                                        "example": "Novi opis",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil ažuriran",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Profil kreatora uspešno ažuriran."
+                                        },
+                                        "creator": {
+                                            "$ref": "#/components/schemas/CreatorResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nije kreator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Niste kreator."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Greška u validaciji"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/creators/{id}/posts": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Javne objave kreatora",
+                "description": "Display a listing of public posts for a specific creator.",
+                "operationId": "e59e5272e70f9f76aa98393187da942a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID kreatora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Broj rezultata po stranici",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitane objave",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "objave": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PostResource"
+                                            }
+                                        },
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Uspesno ucitane sve objave"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kreator nije pronađen",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kreator ne postoji."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Kreiranje nove objave",
+                "operationId": "9fdfb23b98422bf35855aed19967ed15",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID kreatora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "naslov",
+                                    "sadrzaj",
+                                    "pristup"
+                                ],
+                                "properties": {
+                                    "naslov": {
+                                        "type": "string",
+                                        "example": "Nova objava"
+                                    },
+                                    "sadrzaj": {
+                                        "type": "string",
+                                        "example": "Sadržaj objave..."
+                                    },
+                                    "pristup": {
+                                        "type": "string",
+                                        "example": "javno",
+                                        "enum": [
+                                            "javno",
+                                            "pretplatnici",
+                                            "nivo"
+                                        ]
+                                    },
+                                    "nivo_pristupa_id": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Objava kreirana",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Objava uspešno kreirana."
+                                        },
+                                        "post": {
+                                            "$ref": "#/components/schemas/PostResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nema dozvolu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nemate dozvolu."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kreator ne postoji"
+                    },
+                    "422": {
+                        "description": "Validaciona greška"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/posts/{id}": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Pojedinačna javna objava",
+                "description": "Display the specified post if it is public.",
+                "operationId": "b0f9d92879218f68a376b6edc6467c67",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID objave",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitana objava",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Objava nije javna",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Objava nije javna!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Objava nije pronađena"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Ažuriranje objave",
+                "operationId": "929614537d76a081a92170a41ed3bdb3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID objave",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "naslov": {
+                                        "type": "string",
+                                        "example": "Izmenjen naslov"
+                                    },
+                                    "sadrzaj": {
+                                        "type": "string",
+                                        "example": "Izmenjen sadržaj"
+                                    },
+                                    "pristup": {
+                                        "type": "string",
+                                        "example": "nivo",
+                                        "enum": [
+                                            "javno",
+                                            "pretplatnici",
+                                            "nivo"
+                                        ]
+                                    },
+                                    "nivo_pristupa_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Objava ažurirana",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Objava uspešno ažurirana."
+                                        },
+                                        "post": {
+                                            "$ref": "#/components/schemas/PostResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nema dozvolu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nemate dozvolu."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Objava nije pronađena"
+                    },
+                    "422": {
+                        "description": "Validaciona greška"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Brisanje objave",
+                "operationId": "fad1726bd24cd459fc1525b67985df39",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID objave",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Objava obrisana",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Objava uspešno obrisana."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nema dozvolu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nemate dozvolu."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Objava nije pronađena"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "CreatorResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserResource"
+                    },
+                    "naziv_stranice": {
+                        "type": "string",
+                        "example": "Petrov kanal"
+                    },
+                    "opis": {
+                        "type": "string",
+                        "example": "Opis mog kanala",
+                        "nullable": true
+                    },
+                    "sub_levels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TierResource"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PostResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "naslov": {
+                        "type": "string",
+                        "example": "Nova objava"
+                    },
+                    "sadrzaj": {
+                        "type": "string",
+                        "example": "Sadržaj objave..."
+                    },
+                    "datum_objave": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "pristup": {
+                        "type": "string",
+                        "example": "javno",
+                        "enum": [
+                            "javno",
+                            "pretplatnici",
+                            "nivo"
+                        ]
+                    },
+                    "nivo_pristupa_id": {
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "creator": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "naziv_stranice": {
+                                "type": "string",
+                                "example": "Petrov kanal"
+                            },
+                            "user": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Petar Petrović"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "SubscriptionResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "creator": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 2
+                            },
+                            "naziv_stranice": {
+                                "type": "string",
+                                "example": "Muzički kanal"
+                            },
+                            "user": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Marko Marković"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "tier": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "naziv": {
+                                "type": "string",
+                                "example": "Gold"
+                            },
+                            "cena_mesecno": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 9.99
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "aktivna",
+                        "enum": [
+                            "aktivna",
+                            "otkazana",
+                            "istekla"
+                        ]
+                    },
+                    "datum_pocetka": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TierResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "naziv": {
+                        "type": "string",
+                        "example": "Bronzani nivo"
+                    },
+                    "cena_mesecno": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4.99
+                    },
+                    "opis": {
+                        "type": "string",
+                        "example": "Osnovne pogodnosti",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TransactionResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 42
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9.99
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "uspešna",
+                        "enum": [
+                            "uspešna",
+                            "neuspešna"
+                        ]
+                    },
+                    "subscription": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "creator": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Petar Petrović"
+                                    },
+                                    "page_name": {
+                                        "type": "string",
+                                        "example": "Petrov kanal"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "UserResource": {
                 "properties": {
                     "id": {
@@ -279,6 +1083,14 @@
                             "patron",
                             "kreator",
                             "oba"
+                        ]
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user",
+                        "enum": [
+                            "user",
+                            "admin"
                         ]
                     },
                     "created_at": {
@@ -311,6 +1123,14 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Creators",
+            "description": "Creators"
+        },
+        {
+            "name": "Posts",
+            "description": "Posts"
         }
     ]
 }

@@ -6,12 +6,54 @@ use App\Models\Creator;
 use App\Models\Post;
 use App\Http\Resources\PostResource;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 class PostController extends Controller
 {
      /**
      * Display a listing of public posts for a specific creator.
      */
+        #[OA\Get(
+        path: "/api/creators/{id}/posts",
+        summary: "Javne objave kreatora",
+        tags: ["Posts"],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                description: "ID kreatora",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "integer")
+            ),
+            new OA\Parameter(
+                name: "per_page",
+                description: "Broj rezultata po stranici",
+                in: "query",
+                schema: new OA\Schema(type: "integer", default: 15)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Uspešno učitane objave",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "objave", type: "array", items: new OA\Items(ref: "#/components/schemas/PostResource")),
+                        new OA\Property(property: "poruka", type: "string", example: "Uspesno ucitane sve objave")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Kreator nije pronađen",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Kreator ne postoji.")
+                    ]
+                )
+            )
+        ]
+    )]
     public function index(Request $request, $id)
     {
         $creator = Creator::find($id);
@@ -29,6 +71,40 @@ class PostController extends Controller
     /**
      * Display the specified post if it is public.
      */
+    #[OA\Get(
+        path: "/api/posts/{id}",
+        summary: "Pojedinačna javna objava",
+        tags: ["Posts"],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                description: "ID objave",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Uspešno učitana objava",
+                content: new OA\JsonContent(ref: "#/components/schemas/PostResource")
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Objava nije javna",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "poruka", type: "string", example: "Objava nije javna!")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Objava nije pronađena"
+            )
+        ]
+    )]
     public function show($id)
     {
         // Only allow access if post is public
@@ -45,6 +121,62 @@ class PostController extends Controller
         return new PostResource($post);
     }
 
+    #[OA\Post(
+        path: "/api/creators/{id}/posts",
+        summary: "Kreiranje nove objave",
+        tags: ["Posts"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                description: "ID kreatora",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["naslov", "sadrzaj", "pristup"],
+                properties: [
+                    new OA\Property(property: "naslov", type: "string", example: "Nova objava"),
+                    new OA\Property(property: "sadrzaj", type: "string", example: "Sadržaj objave..."),
+                    new OA\Property(property: "pristup", type: "string", enum: ["javno", "pretplatnici", "nivo"], example: "javno"),
+                    new OA\Property(property: "nivo_pristupa_id", type: "integer", nullable: true, example: 3)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: "Objava kreirana",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Objava uspešno kreirana."),
+                        new OA\Property(property: "post", ref: "#/components/schemas/PostResource")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Nema dozvolu",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Nemate dozvolu.")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Kreator ne postoji"
+            ),
+            new OA\Response(
+                response: 422,
+                description: "Validaciona greška"
+            )
+        ]
+    )]
     public function store(Request $request, $creatorId)
     {
         $user = $request->user();
@@ -83,6 +215,61 @@ class PostController extends Controller
         ], 201);
     }
 
+        #[OA\Put(
+        path: "/api/posts/{id}",
+        summary: "Ažuriranje objave",
+        tags: ["Posts"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                description: "ID objave",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "naslov", type: "string", example: "Izmenjen naslov"),
+                    new OA\Property(property: "sadrzaj", type: "string", example: "Izmenjen sadržaj"),
+                    new OA\Property(property: "pristup", type: "string", enum: ["javno", "pretplatnici", "nivo"], example: "nivo"),
+                    new OA\Property(property: "nivo_pristupa_id", type: "integer", nullable: true, example: 2)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Objava ažurirana",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Objava uspešno ažurirana."),
+                        new OA\Property(property: "post", ref: "#/components/schemas/PostResource")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Nema dozvolu",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Nemate dozvolu.")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Objava nije pronađena"
+            ),
+            new OA\Response(
+                response: 422,
+                description: "Validaciona greška"
+            )
+        ]
+    )]
     public function update(Request $request, $postId)
     {
         $user = $request->user();
@@ -121,6 +308,45 @@ class PostController extends Controller
         ], 200);
     }
 
+        #[OA\Delete(
+        path: "/api/posts/{id}",
+        summary: "Brisanje objave",
+        tags: ["Posts"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                description: "ID objave",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Objava obrisana",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Objava uspešno obrisana.")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Nema dozvolu",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Nemate dozvolu.")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Objava nije pronađena"
+            )
+        ]
+    )]
     public function destroy(Request $request, $postId)
     {
         $user = $request->user();
