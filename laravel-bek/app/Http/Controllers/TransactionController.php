@@ -6,12 +6,25 @@ use App\Models\Transaction;
 use App\Http\Resources\TransactionResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 
 class TransactionController extends Controller
 {
     /**
      * List authenticated user's transactions (as patron).
      */
+    #[OA\Get(
+        path: "/api/transactions",
+        summary: "List authenticated user's transactions (as patron)",
+        tags: ["Transactions"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer", default: 15))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "List of transactions", content: new OA\JsonContent(type: "array", items: new OA\Items(ref: "#/components/schemas/TransactionResource")))
+        ]
+    )]
     public function index(Request $request)
     {
         $user = $request->user();
@@ -29,6 +42,35 @@ class TransactionController extends Controller
     /**
      * Get earnings for the authenticated creator.
      */
+    #[OA\Get(
+        path: "/api/creators/earnings",
+        summary: "Get earnings for the authenticated creator",
+        tags: ["Transactions"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "start_date", in: "query", schema: new OA\Schema(type: "string", format: "date"), description: "Filter start date (YYYY-MM-DD)"),
+            new OA\Parameter(name: "end_date", in: "query", schema: new OA\Schema(type: "string", format: "date"), description: "Filter end date")
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Earnings summary",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "total_earnings", type: "number", format: "float"),
+                        new OA\Property(property: "monthly_breakdown", type: "array", items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: "year", type: "integer"),
+                                new OA\Property(property: "month", type: "integer"),
+                                new OA\Property(property: "total", type: "number", format: "float")
+                            ]
+                        ))
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: "Only creators can view earnings")
+        ]
+    )]
     public function earnings(Request $request)
     {
         $user = $request->user();
