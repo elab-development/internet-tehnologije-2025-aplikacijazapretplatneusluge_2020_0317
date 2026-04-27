@@ -8,12 +8,35 @@ use App\Models\SubLevel;
 use App\Http\Resources\SubscriptionResource;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
 class SubscriptionController extends Controller
 {
     /**
      * Subscribe to a creator.
      */
+    #[OA\Post(
+        path: "/api/creators/{id}/subscribe",
+        summary: "Subscribe to a creator",
+        tags: ["Subscriptions"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "Creator ID", schema: new OA\Schema(type: "integer"))
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "nivo_id", type: "integer", nullable: true, description: "Tier ID (optional)")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Subscribed successfully", content: new OA\JsonContent(ref: "#/components/schemas/SubscriptionResource")),
+            new OA\Response(response: 403, description: "Cannot subscribe to yourself"),
+            new OA\Response(response: 404, description: "Creator not found"),
+            new OA\Response(response: 409, description: "Already subscribed")
+        ]
+    )]
     public function store(Request $request, $creatorId)
     {
         $user = $request->user();
@@ -78,6 +101,19 @@ class SubscriptionController extends Controller
     /**
      * Unsubscribe from a creator.
      */
+    #[OA\Delete(
+        path: "/api/creators/{id}/subscribe",
+        summary: "Unsubscribe from a creator",
+        tags: ["Subscriptions"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "Creator ID", schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Unsubscribed"),
+            new OA\Response(response: 404, description: "Not subscribed or creator not found")
+        ]
+    )]
     public function destroy(Request $request, $creatorId)
     {
         $user = $request->user();
@@ -103,6 +139,18 @@ class SubscriptionController extends Controller
     /**
      * List authenticated user's subscriptions.
      */
+    #[OA\Get(
+        path: "/api/subscriptions",
+        summary: "List authenticated user's subscriptions",
+        tags: ["Subscriptions"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer", default: 15))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "List of subscriptions", content: new OA\JsonContent(type: "array", items: new OA\Items(ref: "#/components/schemas/SubscriptionResource")))
+        ]
+    )]
     public function index(Request $request)
     {
         $subscriptions = $request->user()->subscriptions()
@@ -116,6 +164,19 @@ class SubscriptionController extends Controller
     /**
      * Show a single subscription (only if it belongs to the user).
      */
+     #[OA\Get(
+        path: "/api/subscriptions/{id}",
+        summary: "Show a single subscription",
+        tags: ["Subscriptions"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Subscription details", content: new OA\JsonContent(ref: "#/components/schemas/SubscriptionResource")),
+            new OA\Response(response: 404, description: "Not found")
+        ]
+    )]
     public function show(Request $request, $id)
     {
         $subscription = Subscription::with(['creator.user', 'subLevel'])
@@ -131,6 +192,28 @@ class SubscriptionController extends Controller
     /**
      * Update subscription tier.
      */
+    #[OA\Put(
+        path: "/api/subscriptions/{id}",
+        summary: "Update subscription tier",
+        tags: ["Subscriptions"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, schema: new OA\Schema(type: "integer"))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "nivo_id", type: "integer", nullable: true)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Tier updated", content: new OA\JsonContent(ref: "#/components/schemas/SubscriptionResource")),
+            new OA\Response(response: 404, description: "Subscription not found"),
+            new OA\Response(response: 422, description: "Tier does not belong to creator")
+        ]
+    )]
     public function update(Request $request, $id)
     {
         $user = $request->user();

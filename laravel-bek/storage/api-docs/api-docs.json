@@ -17,6 +17,285 @@
         }
     ],
     "paths": {
+        "/api/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List all users (admin only)",
+                "description": "Requires role: admin. Supports filters: tip, role, per_page.",
+                "operationId": "6df5675e4162a2cb784fd7bd54a30be7",
+                "parameters": [
+                    {
+                        "name": "tip",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "patron",
+                                "kreator",
+                                "oba"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "user",
+                                "admin"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{id}/role": {
+            "put": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Update user role or tip (admin only)",
+                "description": "Requires role: admin.",
+                "operationId": "6f26f6cc1b3e2be2330eb8945377f98e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "user",
+                                            "admin"
+                                        ]
+                                    },
+                                    "tip": {
+                                        "type": "string",
+                                        "enum": [
+                                            "patron",
+                                            "kreator",
+                                            "oba"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{id}": {
+            "delete": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Delete a user (admin only)",
+                "description": "Requires role: admin. Cannot delete yourself.",
+                "operationId": "ab179be4f941ca42cfa5703fcf916df7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User deleted"
+                    },
+                    "403": {
+                        "description": "Forbidden (cannot delete yourself)"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/creators": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "List all creators (admin only)",
+                "description": "List all creators with their users.",
+                "operationId": "186a18a716a3d70ddf26e9c71e24b302",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of creators"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/creators/{id}": {
+            "put": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Update a creator (admin only)",
+                "description": "Admin can edit any creator's page name or description.",
+                "operationId": "820c4ccbd55522f180344a370291aef1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "naziv_stranice": {
+                                        "type": "string"
+                                    },
+                                    "opis": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Creator updated"
+                    },
+                    "404": {
+                        "description": "Creator not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/stats": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Platform statistics (admin only)",
+                "description": "Get platform statistics.",
+                "operationId": "9aca7d759e1013283b1ac06be9bfc586",
+                "responses": {
+                    "200": {
+                        "description": "Statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_users": {
+                                            "type": "integer"
+                                        },
+                                        "total_creators": {
+                                            "type": "integer"
+                                        },
+                                        "active_subscriptions": {
+                                            "type": "integer"
+                                        },
+                                        "total_revenue": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/register": {
             "post": {
                 "tags": [
@@ -253,10 +532,1531 @@
                     }
                 ]
             }
+        },
+        "/api/creators": {
+            "get": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Lista svih kreatora",
+                "description": "Display a listing of creators.",
+                "operationId": "753a0278e0284c75ccb713234ebe31cc",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Broj rezultata po stranici",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitani kreatori",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "kreatori": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CreatorResource"
+                                            }
+                                        },
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Uspesno usitani svi kreatori"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/creators/{id}": {
+            "get": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Pojedinačni kreator",
+                "description": "Display the specified creator.",
+                "operationId": "5a79490e1f4bf24227773ee19ee26020",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID kreatora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitani kreator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "kreator": {
+                                            "$ref": "#/components/schemas/CreatorResource"
+                                        },
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Uspesno ucitan kreator"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kreator nije pronađen",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Kreator nije pronadjen"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/creators/profile": {
+            "put": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Ažuriranje profila kreatora",
+                "description": "Samo kreator može ažurirati sopstveni profil.",
+                "operationId": "0ac316a7f0367f703cd08aa5e187801e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "naziv_stranice": {
+                                        "type": "string",
+                                        "example": "Moj novi naziv"
+                                    },
+                                    "opis": {
+                                        "type": "string",
+                                        "example": "Novi opis",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profil ažuriran",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Profil kreatora uspešno ažuriran."
+                                        },
+                                        "creator": {
+                                            "$ref": "#/components/schemas/CreatorResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nije kreator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Niste kreator."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Greška u validaciji"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/creators/{id}/posts": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Javne objave kreatora",
+                "description": "Display a listing of public posts for a specific creator.",
+                "operationId": "e59e5272e70f9f76aa98393187da942a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID kreatora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Broj rezultata po stranici",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitane objave",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "objave": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/PostResource"
+                                            }
+                                        },
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Uspesno ucitane sve objave"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kreator nije pronađen",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kreator ne postoji."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Kreiranje nove objave",
+                "operationId": "9fdfb23b98422bf35855aed19967ed15",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID kreatora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "naslov",
+                                    "sadrzaj",
+                                    "pristup"
+                                ],
+                                "properties": {
+                                    "naslov": {
+                                        "type": "string",
+                                        "example": "Nova objava"
+                                    },
+                                    "sadrzaj": {
+                                        "type": "string",
+                                        "example": "Sadržaj objave..."
+                                    },
+                                    "pristup": {
+                                        "type": "string",
+                                        "example": "javno",
+                                        "enum": [
+                                            "javno",
+                                            "pretplatnici",
+                                            "nivo"
+                                        ]
+                                    },
+                                    "nivo_pristupa_id": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Objava kreirana",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Objava uspešno kreirana."
+                                        },
+                                        "post": {
+                                            "$ref": "#/components/schemas/PostResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nema dozvolu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nemate dozvolu."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kreator ne postoji"
+                    },
+                    "422": {
+                        "description": "Validaciona greška"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/posts/{id}": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Pojedinačna javna objava",
+                "description": "Display the specified post if it is public.",
+                "operationId": "b0f9d92879218f68a376b6edc6467c67",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID objave",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitana objava",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Objava nije javna",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Objava nije javna!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Objava nije pronađena"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Ažuriranje objave",
+                "operationId": "929614537d76a081a92170a41ed3bdb3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID objave",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "naslov": {
+                                        "type": "string",
+                                        "example": "Izmenjen naslov"
+                                    },
+                                    "sadrzaj": {
+                                        "type": "string",
+                                        "example": "Izmenjen sadržaj"
+                                    },
+                                    "pristup": {
+                                        "type": "string",
+                                        "example": "nivo",
+                                        "enum": [
+                                            "javno",
+                                            "pretplatnici",
+                                            "nivo"
+                                        ]
+                                    },
+                                    "nivo_pristupa_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Objava ažurirana",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Objava uspešno ažurirana."
+                                        },
+                                        "post": {
+                                            "$ref": "#/components/schemas/PostResource"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nema dozvolu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nemate dozvolu."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Objava nije pronađena"
+                    },
+                    "422": {
+                        "description": "Validaciona greška"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Brisanje objave",
+                "operationId": "fad1726bd24cd459fc1525b67985df39",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID objave",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Objava obrisana",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Objava uspešno obrisana."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Nema dozvolu",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Nemate dozvolu."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Objava nije pronađena"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/creators/{id}/subscribe": {
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Subscribe to a creator",
+                "description": "Subscribe to a creator.",
+                "operationId": "c8e2879095610435454d5d2a38d56dab",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Creator ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nivo_id": {
+                                        "description": "Tier ID (optional)",
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subscribed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SubscriptionResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Cannot subscribe to yourself"
+                    },
+                    "404": {
+                        "description": "Creator not found"
+                    },
+                    "409": {
+                        "description": "Already subscribed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Unsubscribe from a creator",
+                "description": "Unsubscribe from a creator.",
+                "operationId": "cea31e406cbd13d7518c63b4896b576e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Creator ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Unsubscribed"
+                    },
+                    "404": {
+                        "description": "Not subscribed or creator not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/subscriptions": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "List authenticated user's subscriptions",
+                "description": "List authenticated user's subscriptions.",
+                "operationId": "67df8b16e2d36e7aab97ce19a17f9355",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of subscriptions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SubscriptionResource"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/subscriptions/{id}": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Show a single subscription",
+                "description": "Show a single subscription (only if it belongs to the user).",
+                "operationId": "6b9cf0d3971878009b6d4f0a5598dae9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Subscription details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SubscriptionResource"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Update subscription tier",
+                "description": "Update subscription tier.",
+                "operationId": "bac8be53d2f4233f44fd60abb494230b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nivo_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tier updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SubscriptionResource"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Subscription not found"
+                    },
+                    "422": {
+                        "description": "Tier does not belong to creator"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/creators/{id}/tiers": {
+            "get": {
+                "tags": [
+                    "Tiers"
+                ],
+                "summary": "List tiers (subscription levels) of a creator",
+                "description": "Display a listing of tiers for a specific creator.",
+                "operationId": "6792389268aeb2dc33f2884674690653",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Creator ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of tiers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TierResource"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Creator not found"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Tiers"
+                ],
+                "summary": "Create a new tier (creator only)",
+                "description": "Add a sub tier",
+                "operationId": "a88f170a321544cbbc13406d369596d4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Creator ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "naziv",
+                                    "cena_mesecno"
+                                ],
+                                "properties": {
+                                    "naziv": {
+                                        "type": "string",
+                                        "example": "Gold"
+                                    },
+                                    "cena_mesecno": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 9.99
+                                    },
+                                    "opis": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tier created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TierResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden (not your creator profile)"
+                    },
+                    "404": {
+                        "description": "Creator not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tiers/{id}": {
+            "put": {
+                "tags": [
+                    "Tiers"
+                ],
+                "summary": "Update a tier (creator only)",
+                "description": "Update existing a sub tier",
+                "operationId": "9825cc5f316019bbbcac57952afc2ec0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Tier ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "naziv": {
+                                        "type": "string"
+                                    },
+                                    "cena_mesecno": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "opis": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tier updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TierResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Tier not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tiers"
+                ],
+                "summary": "Delete a tier (creator only)",
+                "description": "Delete existing a sub tier",
+                "operationId": "fb9ff3d68522107f5ab04e9f11e82448",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Tier ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tier deleted"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Tier not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "List authenticated user's transactions (as patron)",
+                "description": "List authenticated user's transactions (as patron).",
+                "operationId": "6581469356772e7a74a0d79897544f1a",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of transactions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/TransactionResource"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/creators/earnings": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get earnings for the authenticated creator",
+                "description": "Get earnings for the authenticated creator.",
+                "operationId": "3e3ac7d5f5926c75cd1a775d1ac5486a",
+                "parameters": [
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Filter start date (YYYY-MM-DD)",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Filter end date",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Earnings summary",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total_earnings": {
+                                            "type": "number",
+                                            "format": "float"
+                                        },
+                                        "monthly_breakdown": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "year": {
+                                                        "type": "integer"
+                                                    },
+                                                    "month": {
+                                                        "type": "integer"
+                                                    },
+                                                    "total": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Only creators can view earnings"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/profile": {
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update authenticated user's profile",
+                "description": "Ažuriranje profila ulogovanog korisnika.",
+                "operationId": "94122b3a1484d6a74360389ea0e85fcb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResource"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/me": {
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete own account",
+                "description": "Brisanje naloga ulogovanog korisnika.",
+                "operationId": "7a61cd17ad2c805d088903b051948e9a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "password"
+                                ],
+                                "properties": {
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Account deleted"
+                    },
+                    "401": {
+                        "description": "Invalid password"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/become-creator": {
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Upgrade a patron account to creator (oba)",
+                "operationId": "6de6a856a958fb5befc5a257a27909cd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "naziv_stranice"
+                                ],
+                                "properties": {
+                                    "naziv_stranice": {
+                                        "type": "string",
+                                        "example": "My Awesome Page"
+                                    },
+                                    "opis": {
+                                        "type": "string",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Upgraded to creator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreatorResource"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Only patrons can become creators"
+                    },
+                    "409": {
+                        "description": "Already has a creator profile"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
         "schemas": {
+            "CreatorResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserResource"
+                    },
+                    "naziv_stranice": {
+                        "type": "string",
+                        "example": "Petrov kanal"
+                    },
+                    "opis": {
+                        "type": "string",
+                        "example": "Opis mog kanala",
+                        "nullable": true
+                    },
+                    "sub_levels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TierResource"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PostResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "naslov": {
+                        "type": "string",
+                        "example": "Nova objava"
+                    },
+                    "sadrzaj": {
+                        "type": "string",
+                        "example": "Sadržaj objave..."
+                    },
+                    "datum_objave": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "pristup": {
+                        "type": "string",
+                        "example": "javno",
+                        "enum": [
+                            "javno",
+                            "pretplatnici",
+                            "nivo"
+                        ]
+                    },
+                    "nivo_pristupa_id": {
+                        "type": "integer",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "creator": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "naziv_stranice": {
+                                "type": "string",
+                                "example": "Petrov kanal"
+                            },
+                            "user": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Petar Petrović"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "SubscriptionResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "creator": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 2
+                            },
+                            "naziv_stranice": {
+                                "type": "string",
+                                "example": "Muzički kanal"
+                            },
+                            "user": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Marko Marković"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "tier": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 3
+                            },
+                            "naziv": {
+                                "type": "string",
+                                "example": "Gold"
+                            },
+                            "cena_mesecno": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 9.99
+                            }
+                        },
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "aktivna",
+                        "enum": [
+                            "aktivna",
+                            "otkazana",
+                            "istekla"
+                        ]
+                    },
+                    "datum_pocetka": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TierResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "naziv": {
+                        "type": "string",
+                        "example": "Bronzani nivo"
+                    },
+                    "cena_mesecno": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 4.99
+                    },
+                    "opis": {
+                        "type": "string",
+                        "example": "Osnovne pogodnosti",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TransactionResource": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 42
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 9.99
+                    },
+                    "date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "uspešna",
+                        "enum": [
+                            "uspešna",
+                            "neuspešna"
+                        ]
+                    },
+                    "subscription": {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 5
+                            },
+                            "creator": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Petar Petrović"
+                                    },
+                                    "page_name": {
+                                        "type": "string",
+                                        "example": "Petrov kanal"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
             "UserResource": {
                 "properties": {
                     "id": {
@@ -279,6 +2079,14 @@
                             "patron",
                             "kreator",
                             "oba"
+                        ]
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "user",
+                        "enum": [
+                            "user",
+                            "admin"
                         ]
                     },
                     "created_at": {
@@ -309,8 +2117,36 @@
     },
     "tags": [
         {
+            "name": "Admin",
+            "description": "Admin"
+        },
+        {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Creators",
+            "description": "Creators"
+        },
+        {
+            "name": "Posts",
+            "description": "Posts"
+        },
+        {
+            "name": "Subscriptions",
+            "description": "Subscriptions"
+        },
+        {
+            "name": "Tiers",
+            "description": "Tiers"
+        },
+        {
+            "name": "Transactions",
+            "description": "Transactions"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
         }
     ]
 }

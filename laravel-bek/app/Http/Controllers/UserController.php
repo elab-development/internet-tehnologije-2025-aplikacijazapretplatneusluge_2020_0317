@@ -9,12 +9,33 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use OpenApi\Attributes as OA;
 
 class UserController extends Controller
 {
     /**
      * Ažuriranje profila ulogovanog korisnika.
      */
+    #[OA\Put(
+        path: "/api/users/profile",
+        summary: "Update authenticated user's profile",
+        tags: ["Users"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "name", type: "string"),
+                    new OA\Property(property: "email", type: "string", format: "email"),
+                    new OA\Property(property: "password", type: "string", format: "password")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Profile updated", content: new OA\JsonContent(ref: "#/components/schemas/UserResource")),
+            new OA\Response(response: 422, description: "Validation error")
+        ]
+    )]
     public function updateProfile(Request $request)
     {
         $user = $request->user();
@@ -46,6 +67,26 @@ class UserController extends Controller
     /**
      * Brisanje naloga ulogovanog korisnika.
      */
+     #[OA\Delete(
+        path: "/api/users/me",
+        summary: "Delete own account",
+        tags: ["Users"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["password"],
+                properties: [
+                    new OA\Property(property: "password", type: "string", format: "password")
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Account deleted"),
+            new OA\Response(response: 401, description: "Invalid password"),
+            new OA\Response(response: 403, description: "Forbidden")
+        ]
+    )]
     public function destroy(Request $request)
     {
         $user = $request->user();
@@ -72,6 +113,28 @@ class UserController extends Controller
         ], 200);
     }
 
+    #[OA\Post(
+        path: "/api/users/become-creator",
+        summary: "Upgrade a patron account to creator (oba)",
+        tags: ["Users"],
+        security: [["bearerAuth" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["naziv_stranice"],
+                properties: [
+                    new OA\Property(property: "naziv_stranice", type: "string", example: "My Awesome Page"),
+                    new OA\Property(property: "opis", type: "string", nullable: true)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Upgraded to creator", content: new OA\JsonContent(ref: "#/components/schemas/CreatorResource")),
+            new OA\Response(response: 403, description: "Only patrons can become creators"),
+            new OA\Response(response: 409, description: "Already has a creator profile"),
+            new OA\Response(response: 422, description: "Validation error")
+        ]
+    )]
     public function becomeCreator(Request $request)
     {
         $user = $request->user();
