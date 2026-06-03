@@ -15,7 +15,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/creators', [CreatorController::class, 'index']);
-Route::get('/creators/{id}', [CreatorController::class, 'show']);
+
 Route::get('/creators/{id}/tiers', [TierController::class, 'index']); 
 Route::get('/creators/{id}/posts', [PostController::class, 'index']); //javne objave datog kreatora
 Route::get('/posts/{id}', [PostController::class, 'show']); //javna objava (ako je javna uopste)
@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
      // Creator profile
     Route::put('/creators/profile', [CreatorController::class, 'updateProfile']);
+    Route::get('/creators/profile', [CreatorController::class, 'myProfile']);
 
     //Tiers (subscription levels)
     Route::post('/creators/{id}/tiers', [TierController::class, 'store']);
@@ -63,5 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/stats', [AdminController::class, 'stats']);
     });
 });
+Route::get('/creators/{id}', [CreatorController::class, 'show'])->where('id', '[0-9]+');
 
 

@@ -167,4 +167,53 @@ class CreatorController extends Controller
             'creator' => new CreatorResource($creator->load('user')),
         ], 200);
     }
+
+    #[OA\Get(
+        path: "/api/creators/{id}",
+        summary: "Vrati profil kreatora istom kreatoru",
+        tags: ["Creators"],
+        parameters: [
+            new OA\Parameter(
+                name: "id",
+                description: "ID kreatora",
+                in: "path",
+                required: true,
+                schema: new OA\Schema(type: "integer")
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Uspešno učitani kreator",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "kreator", ref: "#/components/schemas/CreatorResource"),
+                        new OA\Property(property: "poruka", type: "string", example: "Uspesno ucitan kreator")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 404,
+                description: "Kreator nije pronađen",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "poruka", type: "string", example: "Kreator nije pronadjen")
+                    ]
+                )
+            )
+        ]
+    )]
+    public function myProfile(Request $request)
+    {
+        $user = $request->user();
+        $creator = $user->creator;
+        
+        if (!$creator) {
+            return response()->json(['message' => 'Niste kreator.'], 404);
+        }
+
+        return response()->json([
+            'creator' => new CreatorResource($creator->load('user')),
+        ]);
+    }
 }

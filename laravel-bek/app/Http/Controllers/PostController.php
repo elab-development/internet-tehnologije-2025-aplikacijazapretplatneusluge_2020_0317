@@ -56,11 +56,20 @@ class PostController extends Controller
     )]
     public function index(Request $request, $id)
     {
-        $creator = Creator::find($id);
-        $posts = $creator->posts()
-            ->where('pristup', 'javno') // only public posts for public listing
-            ->orderBy('datum_objave', 'desc')
-            ->paginate($request->get('per_page', 15));
+        $creator = Creator::findOrFail($id);
+        $user = auth('sanctum')->user();
+        $query = $creator->posts();
+
+         // Ako je ulogovani korisnik baš ovaj kreator, prikazujemo sve objave
+        if ($user && $user->creator && $user->creator->id == $creator->id) {
+            // nema dodatnog filtera
+        } else {
+            // inače samo javne
+            $query->where('pristup', 'javno');
+        }
+
+        $posts = $query->orderBy('datum_objave', 'desc')
+                       ->paginate($request->get('per_page', 15));
 
         return response()->json([
             'objave' => PostResource::collection($posts),
