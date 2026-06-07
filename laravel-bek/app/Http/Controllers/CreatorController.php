@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Creator;
+use App\Models\Subscription;
 use App\Http\Resources\CreatorResource;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -39,7 +40,15 @@ class CreatorController extends Controller
     )]
     public function index(Request $request)
     {
-        $creators = Creator::All();
+        $creators = Creator::with('user')
+        ->withCount([
+            'posts',
+            'subscribers' => function ($query) {
+                $query->where('status', 'aktivna');
+            }
+        ])
+        ->get();
+        
         return response()->json([
             'kreatori' => CreatorResource::collection($creators->load('user')),
             'poruka' => 'Uspesno usitani svi kreatori',
@@ -88,14 +97,25 @@ class CreatorController extends Controller
     {
         // Load user and tiers for the response
         $creator = Creator::find($id);
-        if (!$creator) {
-            return response()->json(['poruka' => "Kreator nije pronadjen",], 404);
+        $creator->load('user', 'subLevels');
+
+        $user = auth('sanctum')->user();
+        $userSubscription = null;
+        if ($user) {
+            $userSubscription = Subscription::where('patron_id', $user->id)
+                ->where('kreator_id', $creator->id)
+                ->where('status', 'aktivna')
+                ->first();
         }
-        $creator->load('user');
+
         return response()->json([
             'kreator' => new CreatorResource($creator),
-            'poruka' => 'Uspesno ucitan kreator',
-        ], 200);
+            'user_subscription' => $userSubscription ? [
+                'id' => $userSubscription->id,
+                'nivo_id' => $userSubscription->nivo_id,
+                'status' => $userSubscription->status,
+            ] : null,
+        ]);
     }
 
     /**

@@ -20,6 +20,7 @@ import {
   IconChevronRight,
 } from "@tabler/icons-react";
 import api from "../api/api";
+import RandomQuote from '../components/RandomQuote';
 import { clearAuth, getUserTip, getUserRole } from "../utils/auth";
 
 const NAVY = "#0B1F3B";
@@ -45,7 +46,9 @@ function getMenuItems(tip, role) {
       { label: "Početna (patron)", to: "/home-patron", icon: IconHome },
       { label: "Kreatori", to: "/creators", icon: IconUsers },
       { label: "Moje pretplate", to: "/my-subscriptions", icon: IconList },
-      { label: "Kreatorski panel", to: "/home-creator", icon: IconUserPlus }
+      { label: "Kreatorski panel", to: "/home-creator", icon: IconUserPlus },
+      { label: "Moji nivoi", to: "/my-tiers", icon: IconList },
+      { label: "Moje objave", to: "/my-posts", icon: IconList }
     );
   }
 
@@ -107,7 +110,7 @@ export default function Slider() {
           {collapsed ? <IconChevronRight size={18} /> : <IconChevronLeft size={18} />}
         </ActionIcon>
       </Group>
-
+      
       <Divider />
 
       <Stack gap={8} style={{ flex: 1 }}>
@@ -146,6 +149,10 @@ export default function Slider() {
         ))}
       </Stack>
 
+      <Divider />
+      <div style={{ marginTop: 24 }}>
+        <RandomQuote />
+      </div>
       <Divider />
 
       <UnstyledButton

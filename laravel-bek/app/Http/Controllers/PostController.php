@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Creator;
 use App\Models\Post;
+use App\Models\SubLevel;
+use App\Models\Subscription;
 use App\Http\Resources\PostResource;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
@@ -64,13 +66,37 @@ class PostController extends Controller
         if ($user && $user->creator && $user->creator->id == $creator->id) {
             // nema dodatnog filtera
         } else {
-            // inače samo javne
-            $query->where('pristup', 'javno');
+            $subscription = null;
+            if ($user) {
+                $subscription = Subscription::where('patron_id', $user->id)
+                    ->where('kreator_id', $creator->id)
+                    ->where('status', 'aktivna')
+                    ->first();
+            }
+
+            $query->where(function ($q) use ($subscription) {
+                $q->where('pristup', 'javno');
+                if ($subscription) {
+                    $q->orWhere('pristup', 'pretplatnici');
+                    if ($subscription->nivo_id) {
+                        $q->orWhere(function ($q2) use ($subscription) {
+                            $q2->where('pristup', 'nivo')
+                            ->where('nivo_pristupa_id', $subscription->nivo_id);
+                        });
+                    }
+                }
+            });
         }
 
         $posts = $query->orderBy('datum_objave', 'desc')
-                       ->paginate($request->get('per_page', 15));
+                ->paginate($request->get('per_page', 15));
 
+        $posts->getCollection()->transform(function ($post) {
+            if ($post->pristup === 'nivo' && $post->subLevelReq) {
+                $post->tier_name = $post->subLevelReq->naziv;
+            }
+            return $post;
+        });
         return response()->json([
             'objave' => PostResource::collection($posts),
             'poruka' => 'Uspesno ucitane sve objave',
@@ -374,4 +400,90 @@ class PostController extends Controller
             'message' => 'Objava uspešno obrisana.',
         ], 200);
     }
+
+
+    public function myPosts(Request $request)
+    {
+        $user = $request->user();
+        $creator = $user->creator;
+
+        if (!$creator) {
+            return response()->json(['message' => 'Niste kreator.'], 403);
+        }
+
+        $posts = $creator->posts()
+            ->with('subLevelReq')        // relacija koja dohvata nivo (SubLevel)
+            ->orderBy('datum_objave', 'desc')
+            ->paginate($request->get('per_page', 15));
+
+        // Dodajemo naziv nivoa u svaku objavu
+        $posts->getCollection()->transform(function ($post) {
+            if ($post->pristup === 'nivo' && $post->subLevelReq) {
+                $post->tier_name = $post->subLevelReq->naziv;
+            } else {
+                $post->tier_name = null;
+            }
+            // Ne moramo da šaljemo ceo objekat nivoa
+            unset($post->subLevelReq);
+            return $post;
+        });
+
+        return response()->json([
+            'posts' => $posts,
+        ]);
+    }
+
+    public function patronFeed(Request $request)
+    {
+        $user = $request->user();
+
+        // Dohvati sve aktivne pretplate korisnika
+        $subscriptions = Subscription::where('patron_id', $user->id)
+            ->where('status', 'aktivna')
+            ->get();
+
+        if ($subscriptions->isEmpty()) {
+            return response()->json([
+                'posts' => [
+                    'data' => [],
+                    'current_page' => 1,
+                    'total' => 0,
+                ]
+            ]);
+        }
+
+        // Gradimo upit za objave
+        $query = Post::query();
+
+        // Za svaku pretplatu dodajemo uslov
+        $query->where(function ($mainQuery) use ($subscriptions) {
+            foreach ($subscriptions as $sub) {
+                $mainQuery->orWhere(function ($subQuery) use ($sub) {
+                    $subQuery->where('kreator_id', $sub->kreator_id)
+                        ->where(function ($accessQuery) use ($sub) {
+                            $accessQuery->where('pristup', 'javno')
+                                ->orWhere('pristup', 'pretplatnici')
+                                ->orWhere(function ($tierQuery) use ($sub) {
+                                    $tierQuery->where('pristup', 'nivo')
+                                        ->where('nivo_pristupa_id', $sub->nivo_id);
+                                });
+                        });
+                });
+            }
+        });
+
+        // Učitavamo podatke o kreatoru i korisniku, sortiramo i paginiramo
+        $posts = $query->with(['creator.user'])
+            ->orderBy('datum_objave', 'desc')
+            ->paginate($request->get('per_page', 15));
+
+        // Transformišemo odgovor da dodamo naziv stranice kreatora
+        $posts->getCollection()->transform(function ($post) {
+            $post->creator_page_name = $post->creator->naziv_stranice;
+            $post->creator_id = $post->creator->id;
+            return $post;
+        });
+
+        return response()->json(['posts' => $posts]);
+}
 }

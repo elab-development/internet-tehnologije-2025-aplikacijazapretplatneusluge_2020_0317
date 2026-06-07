@@ -11,6 +11,9 @@ import CreatorDetails from "./pages/CreatorDetails";
 import MySubscriptions from "./pages/MySubscriptions";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { getUserTip, getUserRole } from "./utils/auth";
+import MyTiers from "./pages/MyTiers";
+import MyPosts from "./pages/MyPosts";
+
 
 function RoleRedirect() {
   const tip = getUserTip();
@@ -34,6 +37,8 @@ function App() {
       <Route path="/creators" element={<ProtectedRoute><CreatorsList /></ProtectedRoute>} />
       <Route path="/creators/:id" element={<ProtectedRoute><CreatorDetails /></ProtectedRoute>} />
       <Route path="/my-subscriptions" element={<ProtectedRoute><MySubscriptions /></ProtectedRoute>} />
+      <Route path="/my-tiers" element={<ProtectedRoute><MyTiers /></ProtectedRoute>}/>
+      <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>}/>
       {/* ostale rute */}
     </Routes>
   );

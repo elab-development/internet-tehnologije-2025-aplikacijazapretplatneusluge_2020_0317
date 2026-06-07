@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Creator;
 use App\Models\SubLevel;
 use App\Http\Resources\TierResource;
+use App\Models\Subscription;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 
 class TierController extends Controller
@@ -191,5 +193,81 @@ class TierController extends Controller
         return response()->json([
             'message' => 'Nivo uspešno obrisan.',
         ], 200);
+    }
+
+    
+    public function myTiers(Request $request)
+    {
+        $user = $request->user();
+        $creator = $user->creator;
+
+        if (!$creator) {
+            return response()->json([
+                'message' => 'Niste kreator.'
+            ], 403);
+        }
+
+        // 1. Dohvatanje nivoa sa brojem aktivnih pretplatnika
+        $tiers = SubLevel::where('kreator_id', $creator->id)
+            ->withCount([
+                'subscriptions as subscribers_count' => function ($query) {
+                    $query->where('status', 'aktivna');
+                }
+            ])
+            ->get();
+
+        // 2. Broj pretplatnika bez odabranog nivoa
+        $freeSubscribersCount = Subscription::where('kreator_id', $creator->id)
+            ->where('status', 'aktivna')
+            ->whereNull('nivo_id')
+            ->count();
+
+        // 3. Dodavanje "virtuelnog" nivoa za one bez nivoa (ako je potrebno za prikaz)
+        //    Umesto da ga dodajemo u kolekciju, vratićemo poseban ključ u JSON odgovoru.
+
+        return response()->json([
+            'tiers' => $tiers,
+            'free_subscribers_count' => $freeSubscribersCount,
+        ]);
+    }
+
+
+    public function earnings(Request $request)
+    {
+        $user = $request->user();
+        $creator = $user->creator;
+        
+        if (!$creator) {
+            return response()->json(['message' => 'Niste kreator.'], 403);
+        }
+        
+        // Dohvati sve nivoe sa brojem aktivnih pretplatnika
+        $tiers = SubLevel::where('kreator_id', $creator->id)
+            ->withCount([
+                'subscriptions as subscribers_count' => function ($query) {
+                    $query->where('status', 'aktivna');
+                }
+            ])
+            ->get();
+        
+        // Izračunaj zaradu po nivou i ukupno
+        $totalEarnings = 0;
+        $tierEarnings = $tiers->map(function ($tier) use (&$totalEarnings) {
+            $earnings = $tier->cena_mesecno * $tier->subscribers_count;
+            $totalEarnings += $earnings;
+            
+            return [
+                'id' => $tier->id,
+                'naziv' => $tier->naziv,
+                'cena_mesecno' => $tier->cena_mesecno,
+                'subscribers_count' => $tier->subscribers_count,
+                'total_earnings' => $earnings,
+            ];
+        });
+        
+        return response()->json([
+            'tiers' => $tierEarnings,
+            'total_earnings' => $totalEarnings,
+        ]);
     }
 }

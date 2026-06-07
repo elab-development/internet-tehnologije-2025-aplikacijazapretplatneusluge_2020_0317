@@ -37,6 +37,8 @@ class CreatorResource extends JsonResource
             'naziv_stranice' => $this->naziv_stranice,
             'opis' => $this->opis,
             'sub_levels' => TierResource::collection($this->whenLoaded('subLevels')),
+            'posts_count' => $this->posts_count ?? 0,
+            'subscribers_count' => $this->subscribers_count ?? 0,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

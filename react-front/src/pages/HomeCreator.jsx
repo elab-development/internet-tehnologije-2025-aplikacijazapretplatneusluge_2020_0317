@@ -59,6 +59,7 @@ export default function HomeCreator() {
       postForm.setFieldValue('nivo_pristupa_id', null);
     }
   }, [postForm.values.pristup]);
+  
   // Dohvatanje ID-ja kreatora pre nego što učitamo nivoe/objave
   useEffect(() => {
     const fetchCreator = async () => {

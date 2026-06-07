@@ -244,4 +244,34 @@ class SubscriptionController extends Controller
             'subscription' => new SubscriptionResource($subscription->load('subLevel', 'creator.user')),
         ], 200);
     }
+
+
+    public function totalCost(Request $request)
+    {
+        $user = $request->user();
+        
+        // Dohvati sve aktivne pretplate korisnika, uključujući cenu nivoa
+        $subscriptions = Subscription::where('patron_id', $user->id)
+            ->where('status', 'aktivna')
+            ->with('subLevel')
+            ->get();
+        
+        $totalCost = 0;
+        $subscriptionDetails = $subscriptions->map(function ($sub) use (&$totalCost) {
+            $price = $sub->subLevel ? $sub->subLevel->cena_mesecno : 0;
+            $totalCost += $price;
+            
+            return [
+                'id' => $sub->id,
+                'creator_name' => $sub->creator->naziv_stranice,
+                'tier_name' => $sub->subLevel ? $sub->subLevel->naziv : 'Bez nivoa',
+                'price' => $price,
+            ];
+        });
+        
+        return response()->json([
+            'subscriptions' => $subscriptionDetails,
+            'total_cost' => $totalCost,
+        ]);
+    }
 }

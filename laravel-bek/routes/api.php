@@ -10,12 +10,13 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\CurrencyController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::get('/creators', [CreatorController::class, 'index']);
-
+Route::get('/random-quote', [App\Http\Controllers\QuoteController::class, 'randomQuote']);
 Route::get('/creators/{id}/tiers', [TierController::class, 'index']); 
 Route::get('/creators/{id}/posts', [PostController::class, 'index']); //javne objave datog kreatora
 Route::get('/posts/{id}', [PostController::class, 'show']); //javna objava (ako je javna uopste)
@@ -30,6 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
     //become creator
     Route::post('/users/become-creator', [UserController::class, 'becomeCreator']);
 
+    Route::get('/patron/feed', [PostController::class, 'patronFeed']);
+
      // Creator profile
     Route::put('/creators/profile', [CreatorController::class, 'updateProfile']);
     Route::get('/creators/profile', [CreatorController::class, 'myProfile']);
@@ -38,11 +41,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/creators/{id}/tiers', [TierController::class, 'store']);
     Route::put('/tiers/{id}', [TierController::class, 'update']);
     Route::delete('/tiers/{id}', [TierController::class, 'destroy']);
+    Route::get('/my-tiers', [TierController::class, 'myTiers']);
 
     // Posts
     Route::post('/creators/{id}/posts', [PostController::class, 'store']);
     Route::put('/posts/{id}', [PostController::class, 'update']);
     Route::delete('/posts/{id}', [PostController::class, 'destroy']);
+    Route::get('/my-posts', [PostController::class, 'myPosts']);
 
     // Subscriptions
     Route::post('/creators/{id}/subscribe', [SubscriptionController::class, 'store']);
@@ -54,6 +59,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::get('/transactions/earnings', [TransactionController::class, 'earnings']);
+
+    // Statistika za kreatora (MyTiers)
+    Route::get('/my-tiers/earnings', [TierController::class, 'earnings']);
+    
+    // Statistika za patrona (MySubscriptions)
+    Route::get('/my-subscriptions/total-cost', [SubscriptionController::class, 'totalCost']);
+    
+    // Kursevi valuta (može biti i van auth grupe ako želite da bude dostupno i gostima)
+    Route::get('/currency-rates', [CurrencyController::class, 'getRates']);
 
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin/users', [AdminController::class, 'users']);
