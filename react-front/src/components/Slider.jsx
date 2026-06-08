@@ -13,6 +13,7 @@ import {
 import {
   IconHome,
   IconUsers,
+  IconUser,
   IconUserPlus,
   IconList,
   IconLogout,
@@ -21,15 +22,16 @@ import {
 } from "@tabler/icons-react";
 import api from "../api/api";
 import RandomQuote from '../components/RandomQuote';
-import { clearAuth, getUserTip, getUserRole } from "../utils/auth";
+import { getAuth, clearAuth, getUserTip, getUserRole } from "../utils/auth";
 
 const NAVY = "#0B1F3B";
 
 function getMenuItems(tip, role) {
   // Zajedničke stavke
   const items = [];
+  
 
-  if (tip === "patron") {
+  if (tip === "patron" && role !== "admin") {
     items.push(
       { label: "Početna", to: "/home-patron", icon: IconHome },
       { label: "Kreatori", to: "/creators", icon: IconUsers },
@@ -69,6 +71,9 @@ export default function Slider() {
   const tip = getUserTip();
   const role = getUserRole();
   const menu = useMemo(() => getMenuItems(tip, role), [tip, role]);
+
+  const auth = getAuth();
+  const userName = auth?.user?.name || "Profil";
 
   const logout = async () => {
     try {
@@ -154,6 +159,37 @@ export default function Slider() {
         <RandomQuote />
       </div>
       <Divider />
+
+      <UnstyledButton
+        component={NavLink}
+        to="/my-profile"
+        style={({ isActive }) => ({
+          width: "100%",
+          borderRadius: 14,
+          padding: collapsed ? "12px 10px" : "10px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          background: isActive ? "rgba(11,31,59,0.10)" : "transparent",
+          border: isActive ? "1px solid rgba(11,31,59,0.14)" : "1px solid transparent",
+          marginBottom: 12,
+        })}
+      >
+        <Box
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 12,
+            display: "grid",
+            placeItems: "center",
+            background: "rgba(11,31,59,0.06)",
+            border: "1px solid rgba(11,31,59,0.10)",
+          }}
+        >
+          <IconUser size={18} color={NAVY} />
+        </Box>
+        {!collapsed && <Text fw={700}>{userName}</Text>}
+      </UnstyledButton>
 
       <UnstyledButton
         onClick={logout}

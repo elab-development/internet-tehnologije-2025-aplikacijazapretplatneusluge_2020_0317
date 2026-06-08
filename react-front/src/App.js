@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { getUserTip, getUserRole } from "./utils/auth";
 import MyTiers from "./pages/MyTiers";
 import MyPosts from "./pages/MyPosts";
+import MyProfile from "./pages/MyProfile";
 
 
 function RoleRedirect() {
@@ -39,6 +40,7 @@ function App() {
       <Route path="/my-subscriptions" element={<ProtectedRoute><MySubscriptions /></ProtectedRoute>} />
       <Route path="/my-tiers" element={<ProtectedRoute><MyTiers /></ProtectedRoute>}/>
       <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>}/>
+      <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
       {/* ostale rute */}
     </Routes>
   );
