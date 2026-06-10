@@ -195,7 +195,35 @@ class TierController extends Controller
         ], 200);
     }
 
-    
+        #[OA\Get(
+        path: "/api/my-tiers",
+        summary: "Vrati nivoe kreatora sa brojem pretplatnika",
+        description: "Vraca sve pretplate ulogovanog kreatora, svaku sa projem aktivnih pretplatnika. Ukljucuje i besplatan tip pretplate.",
+        tags: ["Tiers"],
+        security: [["bearerAuth" => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Nivoi kreatora sa brojem pretplatnika",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "tiers",
+                            type: "array",
+                            items: new OA\Items(ref: "#/components/schemas/TierResource", properties: [
+                                new OA\Property(property: "subscribers_count", type: "integer", description: "Number of active subscribers for this tier")
+                            ])
+                        ),
+                        new OA\Property(property: "free_subscribers_count", type: "integer", description: "Number of active subscribers without a selected tier")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Korisnik nije kreator"
+            )
+        ]
+    )]
     public function myTiers(Request $request)
     {
         $user = $request->user();
@@ -231,7 +259,41 @@ class TierController extends Controller
         ]);
     }
 
-
+        #[OA\Get(
+        path: "/api/my-tiers/earnings",
+        summary: "Vrati zaradu kreatora, po nivou pretplate i ukupnu",
+        description: "Racuna i vraca ukupnu mesecnu zaradu prema pretplatnickom nivou i ukupnu mesecnu zaradu ulogovanog kreatoora.",
+        tags: ["Tiers"],
+        security: [["bearerAuth" => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Mesecna zarada",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "tiers",
+                            type: "array",
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer"),
+                                    new OA\Property(property: "naziv", type: "string"),
+                                    new OA\Property(property: "cena_mesecno", type: "number", format: "float"),
+                                    new OA\Property(property: "subscribers_count", type: "integer"),
+                                    new OA\Property(property: "total_earnings", type: "number", format: "float")
+                                ]
+                            )
+                        ),
+                        new OA\Property(property: "total_earnings", type: "number", format: "float")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Korisnik nije kreator"
+            )
+        ]
+    )]
     public function earnings(Request $request)
     {
         $user = $request->user();

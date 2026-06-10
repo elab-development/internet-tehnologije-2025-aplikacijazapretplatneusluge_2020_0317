@@ -245,7 +245,36 @@ class SubscriptionController extends Controller
         ], 200);
     }
 
-
+    #[OA\Get(
+        path: "/api/my-subscriptions/total-cost",
+        summary: "Vrati mesecni trosak svih aktivnih pretplata",
+        description: "Vraca ukupni mesecni trosak pretplata od ulogovanog korisnika tipa patron",
+        tags: ["Subscriptions"],
+        security: [["bearerAuth" => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Ukupni mesecni trosak pretplata i lista pretplata",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "subscriptions",
+                            type: "array",
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer"),
+                                    new OA\Property(property: "creator_name", type: "string"),
+                                    new OA\Property(property: "tier_name", type: "string"),
+                                    new OA\Property(property: "price", type: "number", format: "float")
+                                ]
+                            )
+                        ),
+                        new OA\Property(property: "total_cost", type: "number", format: "float", example: 29.97)
+                    ]
+                )
+            )
+        ]
+    )]
     public function totalCost(Request $request)
     {
         $user = $request->user();

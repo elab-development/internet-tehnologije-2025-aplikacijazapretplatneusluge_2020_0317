@@ -637,6 +637,61 @@
             }
         },
         "/api/creators/profile": {
+            "get": {
+                "tags": [
+                    "Creators"
+                ],
+                "summary": "Vrati profil kreatora istom kreatoru",
+                "operationId": "536275df0902adfd8bb320c1f229845f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID kreatora",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Uspešno učitani kreator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "kreator": {
+                                            "$ref": "#/components/schemas/CreatorResource"
+                                        },
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Uspesno ucitan kreator"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Kreator nije pronađen",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "poruka": {
+                                            "type": "string",
+                                            "example": "Kreator nije pronadjen"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "put": {
                 "tags": [
                     "Creators"
@@ -710,6 +765,84 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/currency-rates": {
+            "get": {
+                "tags": [
+                    "Currency"
+                ],
+                "summary": "Vrati trenutne devizne kurseve",
+                "description": "Vraca devizne kurseve najkoriscenije valute u poredjenju prema EUR. Rezultati se kesiraju na dva sata.",
+                "operationId": "dcf7c01d41dc08be89742d4a58c5d935",
+                "responses": {
+                    "200": {
+                        "description": "Devizni kursevi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "base": {
+                                            "type": "string",
+                                            "example": "EUR"
+                                        },
+                                        "rates": {
+                                            "type": "object",
+                                            "example": "USD: 1.08, GBP: 0.85",
+                                            "additionalProperties": {
+                                                "type": "number",
+                                                "format": "float"
+                                            }
+                                        },
+                                        "target_currencies": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "API kljuc nije ispravan ili ne postoji",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "API ključ za CurrencyFreaks nije podešen."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Kursevi nisu trenutno dostupni",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Trenutno nije moguće dohvatiti kurseve."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/creators/{id}/posts": {
@@ -1099,6 +1232,172 @@
                 ]
             }
         },
+        "/api/my-posts": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Lista objava ulogovanog kreatora",
+                "description": "Vraca sve objave ulogovanog korisnika koji ima status kreatora",
+                "operationId": "6920c67c85d29924da9476d4014674e3",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista objava kreatora",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "posts": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/PostResource"
+                                                    }
+                                                },
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Korisnik nije krator",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Niste kreator."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/patron/feed": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Patron feed",
+                "description": "Vraca sve objave kreatora na koje je ulogovani patron pretplacen, postujuci nivoe pretplata.",
+                "operationId": "9a3e3dfd9ad459e774f8f744da058464",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Feed objave",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "posts": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "$ref": "#/components/schemas/PostResource"
+                                                    }
+                                                },
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/random-quote": {
+            "get": {
+                "tags": [
+                    "Misc"
+                ],
+                "summary": "Uzmi slucajni inspiracioni citat",
+                "description": "Vraca slucajni citat preko eksternog API (type.fit) sa fallback-om.",
+                "operationId": "db7fbd464c422cebd5e97b5d478f33cb",
+                "responses": {
+                    "200": {
+                        "description": "slucajni citat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "content": {
+                                            "type": "string",
+                                            "example": "Kreativnost je inteligencija koja se zabavlja."
+                                        },
+                                        "author": {
+                                            "type": "string",
+                                            "example": "Albert Einstein"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/creators/{id}/subscribe": {
             "post": {
                 "tags": [
@@ -1331,6 +1630,61 @@
                 ]
             }
         },
+        "/api/my-subscriptions/total-cost": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Vrati mesecni trosak svih aktivnih pretplata",
+                "description": "Vraca ukupni mesecni trosak pretplata od ulogovanog korisnika tipa patron",
+                "operationId": "954d502b0ae3c8dbaefaa7b7c8d209fe",
+                "responses": {
+                    "200": {
+                        "description": "Ukupni mesecni trosak pretplata i lista pretplata",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "subscriptions": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "creator_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "tier_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total_cost": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 29.97
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/creators/{id}/tiers": {
             "get": {
                 "tags": [
@@ -1537,6 +1891,109 @@
                     },
                     "404": {
                         "description": "Tier not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/my-tiers": {
+            "get": {
+                "tags": [
+                    "Tiers"
+                ],
+                "summary": "Vrati nivoe kreatora sa brojem pretplatnika",
+                "description": "Vraca sve pretplate ulogovanog kreatora, svaku sa projem aktivnih pretplatnika. Ukljucuje i besplatan tip pretplate.",
+                "operationId": "0f47e824be7cb87be0162ecaf81eb1af",
+                "responses": {
+                    "200": {
+                        "description": "Nivoi kreatora sa brojem pretplatnika",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "tiers": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TierResource"
+                                            }
+                                        },
+                                        "free_subscribers_count": {
+                                            "description": "Number of active subscribers without a selected tier",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Korisnik nije kreator"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/my-tiers/earnings": {
+            "get": {
+                "tags": [
+                    "Tiers"
+                ],
+                "summary": "Vrati zaradu kreatora, po nivou pretplate i ukupnu",
+                "description": "Racuna i vraca ukupnu mesecnu zaradu prema pretplatnickom nivou i ukupnu mesecnu zaradu ulogovanog kreatoora.",
+                "operationId": "e718bce7d34cf514424f5f4dea627c58",
+                "responses": {
+                    "200": {
+                        "description": "Mesecna zarada",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "tiers": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "naziv": {
+                                                        "type": "string"
+                                                    },
+                                                    "cena_mesecno": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "subscribers_count": {
+                                                        "type": "integer"
+                                                    },
+                                                    "total_earnings": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total_earnings": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Korisnik nije kreator"
                     }
                 },
                 "security": [
@@ -1843,6 +2300,14 @@
                             "$ref": "#/components/schemas/TierResource"
                         }
                     },
+                    "posts_count": {
+                        "type": "integer",
+                        "example": 0
+                    },
+                    "subscribers_count": {
+                        "type": "integer",
+                        "example": 0
+                    },
                     "created_at": {
                         "type": "string",
                         "format": "date-time"
@@ -2129,8 +2594,16 @@
             "description": "Creators"
         },
         {
+            "name": "Currency",
+            "description": "Currency"
+        },
+        {
             "name": "Posts",
             "description": "Posts"
+        },
+        {
+            "name": "Misc",
+            "description": "Misc"
         },
         {
             "name": "Subscriptions",

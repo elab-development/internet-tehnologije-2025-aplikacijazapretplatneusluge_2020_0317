@@ -8,6 +8,7 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
+import { Global } from '@emotion/react';
 
 const DORANGE = "#663000";
 
@@ -40,6 +41,20 @@ root.render(
         }}
         defaultColorScheme="light"
       >
+                {/* 2. Dodajemo Global komponentu sa stilovima */}
+        <Global
+          styles={(theme) => ({
+            body: {
+              margin: 0,
+              minHeight: '100vh',
+              backgroundImage: `url(${'/background.jpg'})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              backgroundAttachment: 'fixed',
+            }
+          })}
+        />
         <Notifications position="top-right" />
         <App />
       </MantineProvider>

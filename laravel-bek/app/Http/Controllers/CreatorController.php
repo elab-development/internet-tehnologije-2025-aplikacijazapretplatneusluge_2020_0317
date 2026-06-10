@@ -189,7 +189,7 @@ class CreatorController extends Controller
     }
 
     #[OA\Get(
-        path: "/api/creators/{id}",
+        path: "/api/creators/profile",
         summary: "Vrati profil kreatora istom kreatoru",
         tags: ["Creators"],
         parameters: [

@@ -14,6 +14,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: "naziv_stranice", type: "string", example: "Petrov kanal"),
         new OA\Property(property: "opis", type: "string", nullable: true, example: "Opis mog kanala"),
         new OA\Property(property: "sub_levels", type: "array", items: new OA\Items(ref: "#/components/schemas/TierResource")),
+        new OA\Property(property: "posts_count", type: "integer", example: 0),
+        new OA\Property(property: "subscribers_count", type: "integer", example: 0),
         new OA\Property(property: "created_at", type: "string", format: "date-time"),
         new OA\Property(property: "updated_at", type: "string", format: "date-time"),
     ]

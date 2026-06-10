@@ -4,6 +4,7 @@
   "proxy": "http://127.0.0.1:8000",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.14.0",
     "@mantine/core": "^9.1.1",
     "@mantine/dates": "^9.1.1",
     "@mantine/dropzone": "^9.1.1",

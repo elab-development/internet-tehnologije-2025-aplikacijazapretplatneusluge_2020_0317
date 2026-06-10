@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Title,
@@ -118,6 +119,7 @@ export default function HomeAdmin() {
     } else {
       fetchCreators(creators.current_page);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // Handle page change

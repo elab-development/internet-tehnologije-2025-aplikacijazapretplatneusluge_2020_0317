@@ -401,7 +401,45 @@ class PostController extends Controller
         ], 200);
     }
 
-
+    #[OA\Get(
+        path: "/api/my-posts",
+        summary: "Lista objava ulogovanog kreatora",
+        description: "Vraca sve objave ulogovanog korisnika koji ima status kreatora",
+        tags: ["Posts"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer", default: 15))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Lista objava kreatora",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "posts",
+                            type: "object",
+                            properties: [
+                                new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/PostResource")),
+                                new OA\Property(property: "current_page", type: "integer"),
+                                new OA\Property(property: "last_page", type: "integer"),
+                                new OA\Property(property: "total", type: "integer")
+                            ]
+                        )
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Korisnik nije krator",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: "message", type: "string", example: "Niste kreator.")
+                    ]
+                )
+            )
+        ]
+    )]
     public function myPosts(Request $request)
     {
         $user = $request->user();
@@ -433,6 +471,36 @@ class PostController extends Controller
         ]);
     }
 
+        #[OA\Get(
+        path: "/api/patron/feed",
+        summary: "Patron feed",
+        description: "Vraca sve objave kreatora na koje je ulogovani patron pretplacen, postujuci nivoe pretplata.",
+        tags: ["Posts"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "per_page", in: "query", schema: new OA\Schema(type: "integer", default: 15))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Feed objave",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "posts",
+                            type: "object",
+                            properties: [
+                                new OA\Property(property: "data", type: "array", items: new OA\Items(ref: "#/components/schemas/PostResource")),
+                                new OA\Property(property: "current_page", type: "integer"),
+                                new OA\Property(property: "last_page", type: "integer"),
+                                new OA\Property(property: "total", type: "integer")
+                            ]
+                        )
+                    ]
+                )
+            )
+        ]
+    )]
     public function patronFeed(Request $request)
     {
         $user = $request->user();

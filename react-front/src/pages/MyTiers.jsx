@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Title,
@@ -9,9 +10,8 @@ import {
   Card,
   Select,
   Group,
-  Tabs,
 } from "@mantine/core";
-import { IconUsers, IconChartBar, IconTable } from "@tabler/icons-react";
+import { IconUsers } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import {
   BarChart,
