@@ -136,6 +136,7 @@ class TierController extends Controller
     {
         $user = $request->user();
         $tier = SubLevel::find($tierId);
+        $this->authorize('update', $tier);
         if (!$tier) {
             return response()->json(['message' => 'Nivo pretplate nije pronadjen'], 404);
         }
@@ -180,6 +181,7 @@ class TierController extends Controller
     {
         $user = $request->user();
         $tier = SubLevel::find($tierId);
+        $this->authorize('delete', $tier);
         if (!$tier) {
             return response()->json(['message' => 'Nivo pretplate nije pronadjen'], 404);
         }

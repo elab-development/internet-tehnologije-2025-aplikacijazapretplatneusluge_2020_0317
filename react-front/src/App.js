@@ -14,6 +14,7 @@ import { getUserTip, getUserRole } from "./utils/auth";
 import MyTiers from "./pages/MyTiers";
 import MyPosts from "./pages/MyPosts";
 import MyProfile from "./pages/MyProfile";
+import HomeGuest from "./pages/HomeGuest";
 
 
 function RoleRedirect() {
@@ -31,6 +32,7 @@ function App() {
     <Routes>
       <Route path="/" element={<RoleRedirect />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/guest-home" element={<HomeGuest />} />
 
       <Route path="/home-patron" element={<ProtectedRoute><HomePatron /></ProtectedRoute>} />
       <Route path="/home-creator" element={<ProtectedRoute><HomeCreator /></ProtectedRoute>} />
