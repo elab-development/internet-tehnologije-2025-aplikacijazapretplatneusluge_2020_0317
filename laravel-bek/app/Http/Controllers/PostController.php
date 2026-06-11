@@ -149,7 +149,7 @@ class PostController extends Controller
             'poruka' => 'Objava nije javna!',
             ], 403);
         }
-
+        $this->authorize('view', $post);
         // Load creator and images (if needed)
         $post->load('creator.user', 'images');
 
@@ -309,6 +309,7 @@ class PostController extends Controller
     {
         $user = $request->user();
         $post = Post::find($postId);
+        $this->authorize('update', $post);
         if (!$post) {
             return response()->json(['message' => 'Objava ne postoji.'], 404);
         }
@@ -386,6 +387,7 @@ class PostController extends Controller
     {
         $user = $request->user();
         $post = Post::find($postId);
+        $this->authorize('delete', $post);
         if (!$post) {
             return response()->json(['message' => 'Objava ne postoji.'], 404);
         }

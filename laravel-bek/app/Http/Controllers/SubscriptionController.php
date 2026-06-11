@@ -8,10 +8,12 @@ use App\Models\SubLevel;
 use App\Http\Resources\SubscriptionResource;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use OpenApi\Attributes as OA;
 
 class SubscriptionController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Subscribe to a creator.
      */
@@ -126,7 +128,7 @@ class SubscriptionController extends Controller
             ->where('kreator_id', $creator->id)
             ->where('status', 'aktivna')
             ->first();
-
+        $this->authorize('delete', $subscription); // automatski baca 403 ako ne autorizuje
         if (!$subscription) {
             return response()->json(['message' => 'Niste pretplaćeni na ovog kreatora.'], 404);
         }
@@ -182,6 +184,7 @@ class SubscriptionController extends Controller
         $subscription = Subscription::with(['creator.user', 'subLevel'])
             ->where('patron_id', $request->user()->id)
             ->find($id);
+        $this->authorize('view', $subscription); // automatski baca 403 ako ne autorizuje
         if (!$subscription) {
             return response()->json(['poruka' => "Pretplata nije pronadjena",], 404);
         }
@@ -220,6 +223,7 @@ class SubscriptionController extends Controller
         $subscription = Subscription::where('patron_id', $user->id)
             ->where('status', 'aktivna')
             ->find($id);
+        $this->authorize('update', $subscription); // automatski baca 403 ako ne autorizuje
         if (!$subscription) {
             return response()->json(['poruka' => "Pretplata nije pronadjena",], 404);
         }
