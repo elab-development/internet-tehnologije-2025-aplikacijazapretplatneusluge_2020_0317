@@ -15,12 +15,14 @@ import {
   Stack,
   Pagination,
   ActionIcon,
+  Card,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { IconEdit, IconTrash, IconRefresh } from "@tabler/icons-react";
 import api from "../api/api";
 import Slider from "../components/Slider";
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function HomeAdmin() {
   const [activeTab, setActiveTab] = useState("users"); // 'users' or 'creators'
@@ -37,6 +39,9 @@ export default function HomeAdmin() {
   const [deletingId, setDeletingId] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+
+  const [userTypeStats, setUserTypeStats] = useState([]);
+  const [userTypeLoading, setUserTypeLoading] = useState(false);
 
   // Form for user edit (role & tip)
   const userForm = useForm({
@@ -109,8 +114,30 @@ export default function HomeAdmin() {
     }
   };
 
+  const fetchUserTypeStats = async () => {
+    setUserTypeLoading(true);
+    try {
+      // Dohvati sve korisnike (povećaj per_page, npr. 1000)
+      const res = await api.get('/admin/users?per_page=1000');
+      const users = res.data.data || [];
+      const patrons = users.filter(u => u.tip === 'patron').length;
+      const creators = users.filter(u => u.tip === 'kreator').length;
+      const both = users.filter(u => u.tip === 'oba').length;
+      setUserTypeStats([
+        { name: 'Patron', value: patrons, color: '#4caf50' },
+        { name: 'Kreator', value: creators, color: '#ff9800' },
+        { name: 'Oba', value: both, color: '#9c27b0' },
+      ]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUserTypeLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
+    fetchUserTypeStats();
   }, []);
 
   useEffect(() => {
@@ -434,6 +461,31 @@ export default function HomeAdmin() {
                 </>
               )}
             </>
+          )}
+
+          {!userTypeLoading && userTypeStats.length > 0 && (
+            <Card withBorder shadow="sm" radius="md" padding="lg" mb="xl">
+              <Title order={3} mb="md">Raspodela korisnika po tipu</Title>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={userTypeStats}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label
+                  >
+                    {userTypeStats.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
           )}
 
           {/* Modal za izmenu korisnika */}
