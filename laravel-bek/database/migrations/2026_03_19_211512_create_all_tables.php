@@ -57,7 +57,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('postimages', function (Blueprint $table) {
+        Schema::create('post_images', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('objava_id');
             $table->string('putanja'); 
@@ -76,6 +76,6 @@ return new class extends Migration
         Schema::dropIfExists('subscriptions');
         Schema::dropIfExists('transactions');
         Schema::dropIfExists('posts');
-        Schema::dropIfExists('postimages');
+        Schema::dropIfExists('post_images');
     }
 };

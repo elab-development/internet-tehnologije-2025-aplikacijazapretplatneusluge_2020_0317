@@ -1,0 +1,53 @@
+{
+  "name": "react-front",
+  "version": "0.1.0",
+  "proxy": "http://127.0.0.1:8000",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@mantine/core": "^9.1.1",
+    "@mantine/dates": "^9.1.1",
+    "@mantine/dropzone": "^9.1.1",
+    "@mantine/form": "^9.2.1",
+    "@mantine/hooks": "^9.1.1",
+    "@mantine/notifications": "^9.1.1",
+    "@tabler/icons": "^3.41.1",
+    "@tabler/icons-react": "^3.44.0",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.16.0",
+    "dayjs": "^1.11.20",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.14.2",
+    "react-scripts": "5.0.1",
+    "recharts": "^3.8.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('tip', ['kreator', 'patron', 'oba','admin'])->default('patron')->after('email');
+            $table->enum('tip', ['kreator', 'patron', 'oba'])->default('patron')->after('email');
+            $table->enum('role', ['user', 'admin'])->default('user')->after('tip');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn(['tip']);
+            $table->dropColumn('role');
         });
     }
 };

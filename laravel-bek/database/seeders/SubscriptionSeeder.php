@@ -23,8 +23,8 @@ class SubscriptionSeeder extends Seeder
             return;
         }
 
-        // Napravi 40 pretplata
-        for ($i = 0; $i < 40; $i++) {
+        // Napravi 50 pretplata
+        for ($i = 0; $i < 50; $i++) {
             $patron = $patroni->random();
             $kreator = $kreatori->random();
 
@@ -41,7 +41,7 @@ class SubscriptionSeeder extends Seeder
             ]);
 
             // Svakoj pretplati dodaj 1–6 transakcija
-            $brojTransakcija = rand(1, 6);
+            $brojTransakcija = rand(1, 3);
             for ($j = 0; $j < $brojTransakcija; $j++) {
                 Transaction::factory()->create([
                     'pretplata_id' => $subscription->id,

@@ -25,7 +25,12 @@ class SubscriptionFactory extends Factory
             'kreator_id' => Creator::factory(),
             'nivo_id' => $this->faker->optional(0.7)->passthrough(SubLevel::factory()), // 70% šanse da ima nivo
             'datum_pocetka' => $this->faker->dateTimeBetween('-6 months', 'now'),
-            'status' => $this->faker->randomElement(['aktivna', 'otkazana', 'istekla']),
+            'status' => function () {
+                $rand = fake()->numberBetween(1, 100);
+                if ($rand <= 60) return 'aktivna';
+                if ($rand <= 70) return 'otkazana';
+                return 'istekla';
+            },
         ];
     }
 

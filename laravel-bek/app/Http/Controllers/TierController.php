@@ -1,0 +1,337 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Creator;
+use App\Models\SubLevel;
+use App\Http\Resources\TierResource;
+use App\Models\Subscription;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
+
+class TierController extends Controller
+{
+    /**
+     * Display a listing of tiers for a specific creator.
+     */
+    #[OA\Get(
+        path: "/api/creators/{id}/tiers",
+        summary: "List tiers (subscription levels) of a creator",
+        tags: ["Tiers"],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "Creator ID", schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "List of tiers", content: new OA\JsonContent(type: "array", items: new OA\Items(ref: "#/components/schemas/TierResource"))),
+            new OA\Response(response: 404, description: "Creator not found")
+        ]
+    )]
+    public function index($id)
+    {
+        $creator = Creator::find($id);
+        if (!$creator) {
+            return response()->json(['message' => 'Kreator nije pronadjen'], 404);
+        }
+        $sublvls = $creator->subLevels()->get();
+        return response()->json([
+            'sublvls' => TierResource::collection($sublvls),
+            'poruka' => 'Uspesno ucitani nivoi pretplata',
+        ], 200);
+    }
+
+    /**
+     * Add a sub tier
+     */
+    #[OA\Post(
+        path: "/api/creators/{id}/tiers",
+        summary: "Create a new tier (creator only)",
+        tags: ["Tiers"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "Creator ID", schema: new OA\Schema(type: "integer"))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["naziv", "cena_mesecno"],
+                properties: [
+                    new OA\Property(property: "naziv", type: "string", example: "Gold"),
+                    new OA\Property(property: "cena_mesecno", type: "number", format: "float", example: 9.99),
+                    new OA\Property(property: "opis", type: "string", nullable: true)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: "Tier created", content: new OA\JsonContent(ref: "#/components/schemas/TierResource")),
+            new OA\Response(response: 403, description: "Forbidden (not your creator profile)"),
+            new OA\Response(response: 404, description: "Creator not found"),
+            new OA\Response(response: 422, description: "Validation error")
+        ]
+    )]
+    public function store(Request $request, $creatorId)
+    {
+        $user = $request->user();
+        $creator = Creator::find($creatorId);
+        if (!$creator) {
+            return response()->json(['message' => 'Kreator nije pronadjen'], 404);
+        }
+
+        // Authorization: only the creator owner can add tiers
+        if ($user->creator->id !== $creator->id) {
+            return response()->json(['message' => 'Nemate dozvolu.'], 403);
+        }
+
+        $validated = Validator::make($request->all(), [
+            'naziv' => 'required|string|max:255',
+            'cena_mesecno' => 'required|numeric|min:0',
+            'opis' => 'nullable|string',
+        ]);
+
+        if ($validated->fails()) {
+            return response()->json(['message' => 'Validaciona greska',], 422);
+        }
+
+        $tier = $creator->subLevels()->create([
+            'naziv'=> $request->naziv,
+            'cena_mesecno'=> $request->cena_mesecno, 
+            'opis'=> $request->opis
+        ]);
+
+        return response()->json([
+            'message' => 'Nivo uspešno kreiran.',
+            'tier' => new TierResource($tier),
+        ], 201);
+    }
+
+    /**
+     * Update existing a sub tier
+     */
+    #[OA\Put(
+        path: "/api/tiers/{id}",
+        summary: "Update a tier (creator only)",
+        tags: ["Tiers"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "Tier ID", schema: new OA\Schema(type: "integer"))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: "naziv", type: "string"),
+                    new OA\Property(property: "cena_mesecno", type: "number", format: "float"),
+                    new OA\Property(property: "opis", type: "string", nullable: true)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Tier updated", content: new OA\JsonContent(ref: "#/components/schemas/TierResource")),
+            new OA\Response(response: 403, description: "Forbidden"),
+            new OA\Response(response: 404, description: "Tier not found")
+        ]
+    )]
+    public function update(Request $request, $tierId)
+    {
+        $user = $request->user();
+        $tier = SubLevel::find($tierId);
+        $this->authorize('update', $tier);
+        if (!$tier) {
+            return response()->json(['message' => 'Nivo pretplate nije pronadjen'], 404);
+        }
+
+        // Check ownership via creator relationship
+        if ($user->creator->id !== $tier->creator->id) {
+            return response()->json(['message' => 'Nemate dozvolu.'], 403);
+        }
+
+        $validated = $request->validate([
+            'naziv' => 'sometimes|string|max:255',
+            'cena_mesecno' => 'sometimes|numeric|min:0',
+            'opis' => 'nullable|string',
+        ]);
+
+        $tier->update($validated);
+
+        return response()->json([
+            'message' => 'Nivo uspešno ažuriran.',
+            'tier' => new TierResource($tier),
+        ], 200);
+    }
+
+    /**
+     * Delete existing a sub tier
+     */
+    #[OA\Delete(
+        path: "/api/tiers/{id}",
+        summary: "Delete a tier (creator only)",
+        tags: ["Tiers"],
+        security: [["bearerAuth" => []]],
+        parameters: [
+            new OA\Parameter(name: "id", in: "path", required: true, description: "Tier ID", schema: new OA\Schema(type: "integer"))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: "Tier deleted"),
+            new OA\Response(response: 403, description: "Forbidden"),
+            new OA\Response(response: 404, description: "Tier not found")
+        ]
+    )]
+    public function destroy(Request $request, $tierId)
+    {
+        $user = $request->user();
+        $tier = SubLevel::find($tierId);
+        $this->authorize('delete', $tier);
+        if (!$tier) {
+            return response()->json(['message' => 'Nivo pretplate nije pronadjen'], 404);
+        }
+
+        if ($user->creator->id !== $tier->creator->id) {
+            return response()->json(['message' => 'Nemate dozvolu.'], 403);
+        }
+
+        $tier->delete();
+
+        return response()->json([
+            'message' => 'Nivo uspešno obrisan.',
+        ], 200);
+    }
+
+        #[OA\Get(
+        path: "/api/my-tiers",
+        summary: "Vrati nivoe kreatora sa brojem pretplatnika",
+        description: "Vraca sve pretplate ulogovanog kreatora, svaku sa projem aktivnih pretplatnika. Ukljucuje i besplatan tip pretplate.",
+        tags: ["Tiers"],
+        security: [["bearerAuth" => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Nivoi kreatora sa brojem pretplatnika",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "tiers",
+                            type: "array",
+                            items: new OA\Items(ref: "#/components/schemas/TierResource", properties: [
+                                new OA\Property(property: "subscribers_count", type: "integer", description: "Number of active subscribers for this tier")
+                            ])
+                        ),
+                        new OA\Property(property: "free_subscribers_count", type: "integer", description: "Number of active subscribers without a selected tier")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Korisnik nije kreator"
+            )
+        ]
+    )]
+    public function myTiers(Request $request)
+    {
+        $user = $request->user();
+        $creator = $user->creator;
+
+        if (!$creator) {
+            return response()->json([
+                'message' => 'Niste kreator.'
+            ], 403);
+        }
+
+        // 1. Dohvatanje nivoa sa brojem aktivnih pretplatnika
+        $tiers = SubLevel::where('kreator_id', $creator->id)
+            ->withCount([
+                'subscriptions as subscribers_count' => function ($query) {
+                    $query->where('status', 'aktivna');
+                }
+            ])
+            ->get();
+
+        // 2. Broj pretplatnika bez odabranog nivoa
+        $freeSubscribersCount = Subscription::where('kreator_id', $creator->id)
+            ->where('status', 'aktivna')
+            ->whereNull('nivo_id')
+            ->count();
+
+        // 3. Dodavanje "virtuelnog" nivoa za one bez nivoa (ako je potrebno za prikaz)
+        //    Umesto da ga dodajemo u kolekciju, vratićemo poseban ključ u JSON odgovoru.
+
+        return response()->json([
+            'tiers' => $tiers,
+            'free_subscribers_count' => $freeSubscribersCount,
+        ]);
+    }
+
+        #[OA\Get(
+        path: "/api/my-tiers/earnings",
+        summary: "Vrati zaradu kreatora, po nivou pretplate i ukupnu",
+        description: "Racuna i vraca ukupnu mesecnu zaradu prema pretplatnickom nivou i ukupnu mesecnu zaradu ulogovanog kreatoora.",
+        tags: ["Tiers"],
+        security: [["bearerAuth" => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: "Mesecna zarada",
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(
+                            property: "tiers",
+                            type: "array",
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: "id", type: "integer"),
+                                    new OA\Property(property: "naziv", type: "string"),
+                                    new OA\Property(property: "cena_mesecno", type: "number", format: "float"),
+                                    new OA\Property(property: "subscribers_count", type: "integer"),
+                                    new OA\Property(property: "total_earnings", type: "number", format: "float")
+                                ]
+                            )
+                        ),
+                        new OA\Property(property: "total_earnings", type: "number", format: "float")
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: "Korisnik nije kreator"
+            )
+        ]
+    )]
+    public function earnings(Request $request)
+    {
+        $user = $request->user();
+        $creator = $user->creator;
+        
+        if (!$creator) {
+            return response()->json(['message' => 'Niste kreator.'], 403);
+        }
+        
+        // Dohvati sve nivoe sa brojem aktivnih pretplatnika
+        $tiers = SubLevel::where('kreator_id', $creator->id)
+            ->withCount([
+                'subscriptions as subscribers_count' => function ($query) {
+                    $query->where('status', 'aktivna');
+                }
+            ])
+            ->get();
+        
+        // Izračunaj zaradu po nivou i ukupno
+        $totalEarnings = 0;
+        $tierEarnings = $tiers->map(function ($tier) use (&$totalEarnings) {
+            $earnings = $tier->cena_mesecno * $tier->subscribers_count;
+            $totalEarnings += $earnings;
+            
+            return [
+                'id' => $tier->id,
+                'naziv' => $tier->naziv,
+                'cena_mesecno' => $tier->cena_mesecno,
+                'subscribers_count' => $tier->subscribers_count,
+                'total_earnings' => $earnings,
+            ];
+        });
+        
+        return response()->json([
+            'tiers' => $tierEarnings,
+            'total_earnings' => $totalEarnings,
+        ]);
+    }
+}

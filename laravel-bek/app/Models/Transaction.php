@@ -14,6 +14,6 @@ class Transaction extends Model
     public function subscription()
     {
 
-        return $this->belongsTo(Subscription::class);
+        return $this->belongsTo(Subscription::class, 'pretplata_id');
     }
 }

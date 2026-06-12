@@ -24,7 +24,8 @@ class UserSeeder extends Seeder
             'email' => 'admin@example.com',
             'name' => 'Admin User',
             'password' => 'admin123',
-            'tip' => 'admin',
+            'tip' => 'patron',
+            'role'=> 'admin',
         ]);
     }
 }

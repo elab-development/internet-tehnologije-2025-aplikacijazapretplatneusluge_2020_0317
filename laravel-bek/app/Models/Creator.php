@@ -14,7 +14,7 @@ class Creator extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'korisnik_id');
     }
 
     public function subLevels()

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\UserResource;
 use OpenApi\Attributes as OA;
@@ -108,18 +109,17 @@ class AuthController extends Controller
     )]
     public function login(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'email' => 'required|email',
-            'password' => 'required',
+            'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Uneti podaci nisu ispravni.'],
-            ]);
+        if (!Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
+            return response()->json(['message' => 'Neispravni podaci za prijavu.'], 401);
         }
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
         // Obriši postojeće tokene (opciono, može da se ostavi više aktivnih)
         //$user->tokens()->delete();
@@ -130,7 +130,7 @@ class AuthController extends Controller
             'message' => 'Uspešno ste se prijavili.',
             'user' => new UserResource($user),
             'token' => $token,
-        ]);
+        ], 200);
     }
 
     #[OA\Post(

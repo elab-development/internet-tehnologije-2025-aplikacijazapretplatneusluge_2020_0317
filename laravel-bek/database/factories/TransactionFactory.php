@@ -30,7 +30,11 @@ class TransactionFactory extends Factory
             'pretplata_id' => Subscription::factory(),
             'iznos' => $iznos,
             'datum' => $this->faker->dateTimeBetween('-6 months', 'now'),
-            'status' => $this->faker->randomElement(['uspešna', 'neuspešna']),
+            'status' => function () {
+                $rand = fake()->numberBetween(1, 100);
+                if ($rand <= 80) return 'uspešna';
+                return 'neuspešna';
+            },
         ];
     }
 

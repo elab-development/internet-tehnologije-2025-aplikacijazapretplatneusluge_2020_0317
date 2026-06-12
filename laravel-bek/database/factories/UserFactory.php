@@ -29,7 +29,8 @@ class UserFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'password' => Hash::make('password'),  // svi dobijaju istu lozinku radi testiranja
-            'tip' => $this->faker->randomElement(['patron', 'kreator', 'oba','admin']),
+            'tip' => $this->faker->randomElement(['patron', 'kreator', 'oba']),
+            'role'=> 'user',
             'remember_token' => Str::random(10),
         ];
     }
@@ -62,7 +63,7 @@ class UserFactory extends Factory
     public function admin()
     {
         return $this->state(fn (array $attributes) => [
-            'tip' => 'admin',
+            'role' => 'admin',
         ]);
     }
 
