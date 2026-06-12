@@ -18,6 +18,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import api from "../api/api";
 import Slider from "../components/Slider";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function MySubscriptions() {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -31,6 +32,8 @@ export default function MySubscriptions() {
   const [transactions, setTransactions] = useState([]);
   const [selectedSubscriptionForTransactions, setSelectedSubscriptionForTransactions] = useState(null);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [monthlySpending, setMonthlySpending] = useState([]);
+  const [spendingLoading, setSpendingLoading] = useState(true);
 
   const fetchSubscriptions = async () => {
     setLoading(true);
@@ -70,9 +73,40 @@ export default function MySubscriptions() {
     }
   };
 
+  const fetchTransactions = async () => {
+    try {
+      const res = await api.get('/transactions');
+      const transactions = res.data.transakcije || [];
+      const groups = {};
+      transactions.forEach(tx => {
+        // Konvertuj amount u broj (može biti string)
+        const amount = parseFloat(tx.amount);
+        if (isNaN(amount)) return; // preskoči ako nije broj
+
+        const date = new Date(tx.date);
+        // Zaštita od invalidnog datuma
+        if (isNaN(date.getTime())) return;
+
+        const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        const monthLabel = `${date.getFullYear()}/${date.getMonth() + 1}`;
+        if (!groups[monthKey]) {
+          groups[monthKey] = { month: monthLabel, total: 0 };
+        }
+        groups[monthKey].total += amount;
+      });
+      const sorted = Object.values(groups).sort((a, b) => a.month.localeCompare(b.month));
+      setMonthlySpending(sorted);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSpendingLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchSubscriptions();
     fetchTotalCost();
+    fetchTransactions();
   }, []);
 
   const openDetails = async (subscriptionId) => {
@@ -253,6 +287,25 @@ export default function MySubscriptions() {
                 )}
               </Card>
             </>
+          )}
+
+          {!spendingLoading && monthlySpending.length > 0 && (
+            <Card withBorder shadow="sm" radius="md" padding="lg" mt="xl">
+              <Title order={3} mb="md">Moja mesečna potrošnja</Title>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={monthlySpending}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => {
+                      const num = parseFloat(value);
+                      return isNaN(num) ? '0.00 €' : `${num.toFixed(2)} €`;
+                    }} />
+                  <Legend />
+                  <Bar dataKey="total" fill="#8884d8" name="Potrošnja (€)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
           )}
         </Container>
       </div>
