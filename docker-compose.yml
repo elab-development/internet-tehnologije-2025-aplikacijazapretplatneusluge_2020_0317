@@ -1,0 +1,66 @@
+services:
+  # --- MySQL Database Service ---
+  mysql:
+    image: mysql:8.0                                 # (1) Koristi zvanični MySQL 8.0 image
+    container_name: patron_star_db                  # (2) Ime kontejnera
+    restart: unless-stopped                         # (3) Automatski restartuje kontejner
+    environment:                                    # (4) Environment varijable za MySQL
+      MYSQL_DATABASE: laravel_bek                   #     - Ime baze
+      MYSQL_ROOT_PASSWORD: root                     #     - Root lozinka
+    ports:                                          # (5) Mapiranje portova (Host:Container)
+      - "3307:3306"                                 #     - Host port 3307 -> MySQL port 3306
+    volumes:                                        # (6) Persistent volume za podatke
+      - mysql_data:/var/lib/mysql
+    networks:                                       # (7) Mreža kojoj servis pripada
+      - patron_star_network
+
+  # --- Laravel Backend Service ---
+  backend:
+    build:                                          # (8) Gradi image iz Dockerfile-a u ./backend
+      context: ./laravel-bek
+      dockerfile: Dockerfile
+    container_name: patron_star_backend             # (9) Ime kontejnera
+    restart: unless-stopped                         # (10) Automatski restart
+    working_dir: /var/www                           # (11) Radni direktorijum unutar kontejnera
+    volumes:                                        # (12) Mapiranje folderova (bind mounts)
+      - ./laravel-bek:/var/www                          #     - Lokalni ./backend -> /var/www u kontejneru
+      - /var/www/vendor                             #     - Anonimni volume za vendor (čuva instalaciju)
+    ports:
+      - "8000:8000"                                 # (13) Mapiranje porta za pristup API-ju
+    depends_on:                                     # (14) Zavisi od mysql servisa (redosled pokretanja)
+      - mysql
+    environment:                                    # (15) Environment varijable za Laravel
+      DB_CONNECTION: mysql
+      DB_HOST: mysql                                #     - Host je ime servisa, ne IP adresa
+      DB_PORT: 3306
+      DB_DATABASE: laravel_bek
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    networks:
+      - patron_star_network
+
+  # --- React Frontend Service ---
+  frontend:
+    build:                                          # (16) Gradi image iz Dockerfile-a u ./frontend
+      context: ./react-front
+      dockerfile: Dockerfile
+    container_name: patron_star_frontend            # (17) Ime kontejnera
+    restart: unless-stopped
+    working_dir: /app                               # (18) Radni direktorijum
+    volumes:                                        # (19) Bind mounts za razvoj
+      - ./react-front:/app                             #     - Lokalni ./frontend -> /app
+      - /app/node_modules                           #     - Anonimni volume za node_modules
+    ports:
+      - "3000:3000"                                 # (20) Mapiranje porta za pristup frontendu
+    depends_on:                                     # (21) Frontend zavisi od backend-a
+      - backend
+    networks:
+      - patron_star_network
+
+volumes:                                            # (22) Definisanje named volume-a
+  mysql_data:
+    driver: local
+
+networks:                                           # (23) Definisanje mreže
+  patron_star_network:
+    driver: bridge
