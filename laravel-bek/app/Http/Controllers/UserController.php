@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Creator;
 use App\Http\Resources\CreatorResource;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -176,12 +177,7 @@ class UserController extends Controller
         // 5. Return response with user and creator data
         return response()->json([
             'message' => 'Uspešno ste postali kreator!',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'tip' => $user->tip,
-            ],
+            'user' => new UserResource($user->fresh()),
             'creator' => new CreatorResource($creator->load('user')),
         ], 201);
     }

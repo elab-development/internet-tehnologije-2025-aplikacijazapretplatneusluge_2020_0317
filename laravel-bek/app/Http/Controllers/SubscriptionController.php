@@ -96,6 +96,7 @@ class SubscriptionController extends Controller
                     'datum_pocetka' => now(),
                 ]);
             }
+            $subscription->load('subLevel');
 
             $price = $subscription->subLevel ? $subscription->subLevel->cena_mesecno : 0;
             Transaction::create([

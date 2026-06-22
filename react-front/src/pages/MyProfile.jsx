@@ -168,13 +168,9 @@ export default function MyProfile() {
       const res = await api.post("/users/become-creator", values);
       notifications.show({ title: "Uspeh", message: res.data.message, color: "green" });
       // Ažuriraj sessionStorage – korisnikov tip je sada 'oba'
-      const auth = getAuth();
-      if (auth) {
-        const updatedUser = res.data.user;
-        saveAuth({ ...auth, user: updatedUser });
-        setUser(updatedUser);
-      }
-      setCreator(res.data.creator);
+      // Osveži podatke sa servera
+      await fetchData();
+      
       setBecomeCreatorModal(false);
       becomeCreatorForm.reset();
     } catch (err) {
