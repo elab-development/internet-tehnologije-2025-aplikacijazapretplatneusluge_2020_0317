@@ -154,11 +154,15 @@ export default function Slider() {
         ))}
       </Stack>
 
-      <Divider />
-      <div style={{ marginTop: 24 }}>
-        <RandomQuote />
-      </div>
-      <Divider />
+      {!collapsed && (
+        <>
+          <Divider />
+          <div style={{ marginTop: 24 }}>
+            <RandomQuote />
+          </div>
+          <Divider />
+        </>
+      )}
 
       <UnstyledButton
         component={NavLink}

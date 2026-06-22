@@ -47,10 +47,10 @@ class CreatorController extends Controller
                 $query->where('status', 'aktivna');
             }
         ])
-        ->get();
+        ->paginate($request->get('per_page', 15));
         
         return response()->json([
-            'kreatori' => CreatorResource::collection($creators->load('user')),
+            'kreatori' => $creators,
             'poruka' => 'Uspesno usitani svi kreatori',
         ], 200);
     }
@@ -97,6 +97,9 @@ class CreatorController extends Controller
     {
         // Load user and tiers for the response
         $creator = Creator::find($id);
+        if (!$creator) {
+            return response()->json(['message' => 'Kreator ne postoji.'], 404);
+        }
         $creator->load('user', 'subLevels');
 
         $user = auth('sanctum')->user();

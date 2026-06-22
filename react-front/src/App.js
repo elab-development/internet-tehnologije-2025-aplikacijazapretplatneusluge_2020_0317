@@ -4,7 +4,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import HomePatron from "./pages/HomePatron";
-import HomeCreator from "./pages/HomeCreator"; // kreiraćete
+import HomeCreator from "./pages/HomeCreator";
 import HomeAdmin from "./pages/HomeAdmin";
 import CreatorsList from "./pages/CreatorsList";
 import CreatorDetails from "./pages/CreatorDetails";
@@ -43,7 +43,6 @@ function App() {
       <Route path="/my-tiers" element={<ProtectedRoute><MyTiers /></ProtectedRoute>}/>
       <Route path="/my-posts" element={<ProtectedRoute><MyPosts /></ProtectedRoute>}/>
       <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
-      {/* ostale rute */}
     </Routes>
   );
 }

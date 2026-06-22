@@ -121,8 +121,8 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Obriši postojeće tokene (opciono, može da se ostavi više aktivnih)
-        //$user->tokens()->delete();
+        // Obriši postojeće tokene
+        $user->tokens()->delete();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

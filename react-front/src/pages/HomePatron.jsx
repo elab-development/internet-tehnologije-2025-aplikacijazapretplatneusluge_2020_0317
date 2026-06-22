@@ -10,6 +10,7 @@ import {
   Group,
   Avatar,
   Card,
+  Pagination,
   Badge,
   Stack,
 } from "@mantine/core";
@@ -62,12 +63,16 @@ export default function HomePatron() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [feedPage, setFeedPage] = useState(1);
+  const [feedTotalPages, setFeedTotalPages] = useState(1);
+  const FEED_PER_PAGE = 15;
 
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const res = await api.get("/patron/feed");
+        const res = await api.get(`/patron/feed?page=${feedPage}&per_page=${FEED_PER_PAGE}`);
         setPosts(res.data.posts?.data || []);
+        setFeedTotalPages(res.data.posts?.last_page || 1);
       } catch (err) {
         console.error(err);
         setError(err.response?.data?.message || "Ne mogu da učitam objave.");
@@ -76,7 +81,7 @@ export default function HomePatron() {
       }
     };
     fetchFeed();
-  }, []);
+  }, [feedPage]);
 
   if (loading) {
     return (
@@ -173,6 +178,15 @@ export default function HomePatron() {
                 </Card>
               ))}
             </SimpleGrid>
+          )}
+          {feedTotalPages > 1 && (
+            <Group justify="center" mt="xl">
+              <Pagination
+                total={feedTotalPages}
+                value={feedPage}
+                onChange={setFeedPage}
+              />
+            </Group>
           )}
         </Container>
       </div>

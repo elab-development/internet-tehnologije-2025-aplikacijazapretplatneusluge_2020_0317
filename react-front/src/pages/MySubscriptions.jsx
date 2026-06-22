@@ -12,6 +12,7 @@ import {
   Group,
   Alert,
   Card,
+  Pagination,
   SimpleGrid,
   ScrollArea,
 } from "@mantine/core";
@@ -34,12 +35,16 @@ export default function MySubscriptions() {
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [monthlySpending, setMonthlySpending] = useState([]);
   const [spendingLoading, setSpendingLoading] = useState(true);
+  const [subsPage, setSubsPage] = useState(1);
+  const [subsTotalPages, setSubsTotalPages] = useState(1);
+  const SUBS_PER_PAGE = 15;
 
   const fetchSubscriptions = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/subscriptions");
+      const res = await api.get(`/subscriptions?page=${subsPage}&per_page=${SUBS_PER_PAGE}`);
       setSubscriptions(res.data.data || []);
+      setSubsTotalPages(res.data.last_page || 1);
     } catch (err) {
       console.error(err);
       notifications.show({
@@ -77,8 +82,9 @@ export default function MySubscriptions() {
     try {
       const res = await api.get('/transactions');
       const transactions = res.data.transakcije || [];
+      const successfulTransactions = transactions.filter(tx => tx.status === "uspešna");
       const groups = {};
-      transactions.forEach(tx => {
+      successfulTransactions .forEach(tx => {
         // Konvertuj amount u broj (može biti string)
         const amount = parseFloat(tx.amount);
         if (isNaN(amount)) return; // preskoči ako nije broj
@@ -107,7 +113,7 @@ export default function MySubscriptions() {
     fetchSubscriptions();
     fetchTotalCost();
     fetchTransactions();
-  }, []);
+  }, [subsPage]);
 
   const openDetails = async (subscriptionId) => {
     try {
@@ -257,6 +263,16 @@ export default function MySubscriptions() {
                   ))}
                 </Table.Tbody>
               </Table>
+              
+              {subsTotalPages > 1 && (
+                <Group justify="center" mt="xl">
+                  <Pagination
+                    total={subsTotalPages}
+                    value={subsPage}
+                    onChange={setSubsPage}
+                  />
+                </Group>
+              )}
 
               {/* Statistika ispod tabele */}
               <Card withBorder shadow="sm" radius="md" padding="lg" mt="xl">

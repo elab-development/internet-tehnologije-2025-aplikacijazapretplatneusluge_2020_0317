@@ -313,7 +313,7 @@ if (!user) {
           )}
 
           {/* POSTANI KREATOR – samo za patrone */}
-          {user.tip === 'patron' && (
+          {user.data.tip === "patron" && (
             <Card withBorder shadow="sm" radius="md" padding="lg" mb="xl">
               <Title order={3} mb="md">
                 Postanite kreator

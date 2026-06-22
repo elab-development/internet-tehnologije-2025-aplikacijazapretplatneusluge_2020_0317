@@ -83,8 +83,7 @@ class UserController extends Controller
         ),
         responses: [
             new OA\Response(response: 200, description: "Account deleted"),
-            new OA\Response(response: 401, description: "Invalid password"),
-            new OA\Response(response: 403, description: "Forbidden")
+            new OA\Response(response: 422, description: "Invalid password")
         ]
     )]
     public function destroy(Request $request)
@@ -130,7 +129,6 @@ class UserController extends Controller
         ),
         responses: [
             new OA\Response(response: 201, description: "Upgraded to creator", content: new OA\JsonContent(ref: "#/components/schemas/CreatorResource")),
-            new OA\Response(response: 403, description: "Only patrons can become creators"),
             new OA\Response(response: 409, description: "Already has a creator profile"),
             new OA\Response(response: 422, description: "Validation error")
         ]
@@ -139,13 +137,6 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        // 1. Check current role
-        if ($user->tip !== 'patron') {
-            return response()->json([
-                'message' => 'Samo korisnici tipa "patron" mogu postati kreatori.',
-                'tip' => $user->tip
-            ], 403);
-        }
 
         // 2. Check if user already has a creator record
         if ($user->creator()->exists()) {

@@ -98,7 +98,7 @@ class PostController extends Controller
             return $post;
         });
         return response()->json([
-            'objave' => PostResource::collection($posts),
+            'objave' => $posts,
             'poruka' => 'Uspesno ucitane sve objave',
         ], 200);
     }
