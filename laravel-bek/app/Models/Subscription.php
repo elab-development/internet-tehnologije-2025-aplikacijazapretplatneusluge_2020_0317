@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Subscription extends Model
 {
     use HasFactory;
-    protected $fillable = ['patron_id', 'kreator_id', 'nivo_id', 'status'];
+    protected $fillable = ['patron_id', 'kreator_id', 'nivo_id', 'status', 'datum_pocetka'];
 
     protected $casts = [
         'datum_pocetka' => 'datetime',

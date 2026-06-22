@@ -242,7 +242,10 @@ class PostController extends Controller
             }
         }
 
-        $post = $creator->posts()->create($validated);
+        //$post = $creator->posts()->create($validated);
+        $post = $creator->posts()->create(array_merge($validated, [
+            'datum_objave' => now(),
+        ]));
 
         return response()->json([
             'message' => 'Objava uspešno kreirana.',

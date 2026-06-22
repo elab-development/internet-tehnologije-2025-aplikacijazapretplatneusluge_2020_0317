@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Post extends Model
 {
     use HasFactory;
-    protected $fillable = ['kreator_id', 'naslov', 'sadrzaj', 'pristup', 'nivo_pristupa_id'];
+    protected $fillable = ['kreator_id', 'naslov', 'sadrzaj', 'pristup', 'nivo_pristupa_id', 'datum_objave'];
 
     protected $casts = [
         'datum_objave' => 'datetime',
