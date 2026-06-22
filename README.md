@@ -126,15 +126,20 @@ package.json
 ```json
 "proxy": "http://backend:8000"
 ```
-Ili se prebaciti na docker-grana
-```bash
-git checkout docker-grana
-```
 
 ### Pokretanje prvi put
 ```bash
 docker-compose up --build
 ```
+
+### Pokretanje migracija nad bazom i popunjavanje podacima
+```bash
+docker exec -it patron_star_backend php artisan migrate
+```
+```bash
+docker exec -it patron_star_backend php artisan db:seed
+```
+
 ### Svako naredno pokretanje
 ```bash
 docker-compose up

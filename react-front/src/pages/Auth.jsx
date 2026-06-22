@@ -46,7 +46,6 @@ export default function Auth() {
       if (user.role === "admin") navigate("/admin/stats");
       else if (user.tip === "patron") navigate("/home-patron");
       else if (user.tip === "kreator") navigate("/home-creator");
-      else if (user.tip === "oba") navigate("/home-patron");
       else navigate("/");
     } catch (err) {
       notifications.show({ title: "Greška", message: "Neispravni podaci", color: "red" });
@@ -127,7 +126,7 @@ export default function Auth() {
                   <Group grow>
                     <Button variant={regTip === "patron" ? "filled" : "light"} onClick={() => setRegTip("patron")} compact>Patron</Button>
                     <Button variant={regTip === "kreator" ? "filled" : "light"} onClick={() => setRegTip("kreator")} compact>Kreator</Button>
-                    <Button variant={regTip === "oba" ? "filled" : "light"} onClick={() => setRegTip("oba")} compact>Oba</Button>
+                    
                   </Group>
                   <Button type="submit" loading={loading}>Registruj se</Button>
                 </Stack>

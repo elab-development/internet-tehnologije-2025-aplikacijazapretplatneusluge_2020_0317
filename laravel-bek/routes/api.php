@@ -66,7 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Statistika za patrona (MySubscriptions)
     Route::get('/my-subscriptions/total-cost', [SubscriptionController::class, 'totalCost']);
     
-    // Kursevi valuta (može biti i van auth grupe ako želite da bude dostupno i gostima)
+    // Kursevi valuta
     Route::get('/currency-rates', [CurrencyController::class, 'getRates']);
 
     Route::middleware('role:admin')->group(function () {

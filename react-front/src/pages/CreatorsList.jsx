@@ -9,6 +9,7 @@ import {
   Button,
   Loader,
   Group,
+  Pagination,
   Stack,
   Alert,
 } from "@mantine/core";
@@ -21,12 +22,16 @@ export default function CreatorsList() {
   const [creators, setCreators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [creatorsPage, setCreatorsPage] = useState(1);
+  const [creatorsTotalPages, setCreatorsTotalPages] = useState(1);
+  const CREATORS_PER_PAGE = 15;
 
   useEffect(() => {
     const fetchCreators = async () => {
       try {
-        const res = await api.get("/creators");
-        setCreators(res.data.kreatori || []);
+        const res = await api.get(`/creators?page=${creatorsPage}&per_page=${CREATORS_PER_PAGE}`);
+        setCreators(res.data.kreatori?.data || []);
+        setCreatorsTotalPages(res.data.kreatori?.last_page || 1);
       } catch (err) {
         console.error(err);
         setError("Ne mogu da učitam listu kreatora.");
@@ -35,7 +40,7 @@ export default function CreatorsList() {
       }
     };
     fetchCreators();
-  }, []);
+  }, [creatorsPage]);
 
   if (loading) {
     return (
@@ -106,6 +111,15 @@ export default function CreatorsList() {
                 </Card>
               ))}
             </SimpleGrid>
+          )}
+          {creatorsTotalPages > 1 && (
+            <Group justify="center" mt="xl">
+              <Pagination
+                total={creatorsTotalPages}
+                value={creatorsPage}
+                onChange={setCreatorsPage}
+              />
+            </Group>
           )}
         </Container>
       </div>

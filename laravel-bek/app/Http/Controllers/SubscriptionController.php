@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Creator;
 use App\Models\Subscription;
 use App\Models\SubLevel;
+use App\Models\Transaction;
 use App\Http\Resources\SubscriptionResource;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -55,7 +56,7 @@ class SubscriptionController extends Controller
         // Check if already subscribed
         $existing = Subscription::where('patron_id', $user->id)
             ->where('kreator_id', $creator->id)
-            ->whereIn('status', ['aktivna', 'otkazana']) // allow resubscribing after cancellation? We'll treat as update.
+            ->whereIn('status', ['aktivna', 'otkazana'])
             ->first();
 
         if ($existing && $existing->status === 'aktivna') {
@@ -76,24 +77,41 @@ class SubscriptionController extends Controller
             }
         }
 
-        // If already had a cancelled subscription, reactivate it
-        if ($existing) {
-            $existing->update([
-                'status' => 'aktivna',
-                'nivo_id' => $validated['nivo_id'] ?? null,
-                'datum_pocetka' => now(),
-            ]);
-            $subscription = $existing->fresh();
-        } else {
-            $subscription = Subscription::create([
-                'patron_id' => $user->id,
-                'kreator_id' => $creator->id,
-                'nivo_id' => $validated['nivo_id'] ?? null,
-                'status' => 'aktivna',
-                'datum_pocetka' => now(),
-            ]);
-        }
+        \DB::beginTransaction();
+        try {
+            // If already had a cancelled subscription, reactivate it
+            if ($existing) {
+                $existing->update([
+                    'status' => 'aktivna',
+                    'nivo_id' => $validated['nivo_id'] ?? null,
+                    'datum_pocetka' => now(),
+                ]);
+                $subscription = $existing->fresh();
+            } else {
+                $subscription = Subscription::create([
+                    'patron_id' => $user->id,
+                    'kreator_id' => $creator->id,
+                    'nivo_id' => $validated['nivo_id'] ?? null,
+                    'status' => 'aktivna',
+                    'datum_pocetka' => now(),
+                ]);
+            }
 
+            $price = $subscription->subLevel ? $subscription->subLevel->cena_mesecno : 0;
+            Transaction::create([
+                'pretplata_id' => $subscription->id,
+                'iznos' => $price,
+                'datum' => now(),
+                'status' => 'uspešna',
+             ]);
+            \DB::commit();
+        } catch (\Throwable $th) {
+            \DB::rollBack();
+            return response()->json([
+                'message' => 'Došlo je do greške prilikom transakcije. Pokušajte ponovo.'
+            ], 500);
+        }
+        
         return response()->json([
             'message' => 'Uspešno ste se pretplatili.',
             'subscription' => new SubscriptionResource($subscription->load('subLevel', 'creator.user')),
@@ -128,10 +146,12 @@ class SubscriptionController extends Controller
             ->where('kreator_id', $creator->id)
             ->where('status', 'aktivna')
             ->first();
-        $this->authorize('delete', $subscription); // automatski baca 403 ako ne autorizuje
+        
         if (!$subscription) {
             return response()->json(['message' => 'Niste pretplaćeni na ovog kreatora.'], 404);
         }
+
+        $this->authorize('delete', $subscription);
 
         $subscription->update(['status' => 'otkazana']);
 
@@ -184,7 +204,7 @@ class SubscriptionController extends Controller
         $subscription = Subscription::with(['creator.user', 'subLevel'])
             ->where('patron_id', $request->user()->id)
             ->find($id);
-        $this->authorize('view', $subscription); // automatski baca 403 ako ne autorizuje
+        $this->authorize('view', $subscription);
         if (!$subscription) {
             return response()->json(['poruka' => "Pretplata nije pronadjena",], 404);
         }
@@ -218,14 +238,27 @@ class SubscriptionController extends Controller
         ]
     )]
     public function update(Request $request, $id)
-    {
-        $user = $request->user();
-        $subscription = Subscription::where('patron_id', $user->id)
-            ->where('status', 'aktivna')
-            ->find($id);
-        $this->authorize('update', $subscription); // automatski baca 403 ako ne autorizuje
-        if (!$subscription) {
-            return response()->json(['poruka' => "Pretplata nije pronadjena",], 404);
+{
+    $user = $request->user();
+
+    $subscription = Subscription::where('patron_id', $user->id)
+        ->where('status', 'aktivna')
+        ->find($id);
+
+    if (!$subscription) {
+        return response()->json(['poruka' => "Pretplata nije pronadjena"], 404);
+    }
+
+    $this->authorize('update', $subscription);
+
+    \DB::beginTransaction();
+
+    try {
+        $oldTransaction = Transaction::where('pretplata_id', $subscription->id)
+            ->where('status', 'uspešna')
+            ->first();
+        if ($oldTransaction) {
+            $oldTransaction->update(['status' => 'neuspešna']);
         }
 
         $validated = $request->validate([
@@ -243,11 +276,28 @@ class SubscriptionController extends Controller
 
         $subscription->update(['nivo_id' => $validated['nivo_id'] ?? null]);
 
+        $newPrice = $subscription->subLevel ? $subscription->subLevel->cena_mesecno : 0;
+        Transaction::create([
+            'pretplata_id' => $subscription->id,
+            'iznos' => $newPrice, 
+            'datum' => now(),
+            'status' => 'uspešna',
+        ]);
+        
+        \DB::commit();
+    } catch (\Throwable $th) {
+        \DB::rollBack();
+        \Log::error('Transaction error in update: ' . $th->getMessage());
         return response()->json([
-            'message' => 'Nivo pretplate je ažuriran.',
-            'subscription' => new SubscriptionResource($subscription->load('subLevel', 'creator.user')),
-        ], 200);
+            'message' => 'Došlo je do greške prilikom transakcije. Pokušajte ponovo.'
+        ], 500);
     }
+
+    return response()->json([
+        'message' => 'Nivo pretplate je ažuriran.',
+        'subscription' => new SubscriptionResource($subscription->load('subLevel', 'creator.user')),
+    ], 200);
+}
 
     #[OA\Get(
         path: "/api/my-subscriptions/total-cost",

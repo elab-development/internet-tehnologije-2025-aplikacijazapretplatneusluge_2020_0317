@@ -13,6 +13,7 @@ import {
   Badge,
   Stack,
   Divider,
+  Pagination,
   Modal,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -34,18 +35,22 @@ export default function CreatorDetails() {
   const [pendingTierId, setPendingTierId] = useState(null);
   const auth = getAuth();
   const isOwnPage = auth?.user?.creator?.id === Number(id);
+  const [postsPage, setPostsPage] = useState(1);
+  const [postsTotalPages, setPostsTotalPages] = useState(1);
+  const POSTS_PER_PAGE = 15;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [creatorRes, postsRes] = await Promise.all([
           api.get(`/creators/${id}`),
-          api.get(`/creators/${id}/posts`),
+          api.get(`/creators/${id}/posts?page=${postsPage}&per_page=${POSTS_PER_PAGE}`),
         ]);
         setCreator(creatorRes.data.kreator);
         setTiers(creatorRes.data.kreator.sub_levels || []);
         setUserSubscription(creatorRes.data.user_subscription);
-        setPosts(postsRes.data.objave || []);
+        setPosts(postsRes.data.objave?.data || []);
+        setPostsTotalPages(postsRes.data.objave?.last_page || 1);
       } catch (err) {
         console.error(err);
         notifications.show({ title: "Greška", message: "Ne mogu da učitam podatke", color: "red" });
@@ -54,7 +59,7 @@ export default function CreatorDetails() {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, postsPage]);
 
   const handleSubscribeClick = (nivoId) => {
     // If not logged in, redirect to auth
@@ -174,6 +179,15 @@ export default function CreatorDetails() {
                 <PostCard key={post.id} post={post} showActions={false} showReadMore={true} />
               ))}
             </SimpleGrid>
+          )}
+          {postsTotalPages > 1 && (
+              <Group justify="center" mt="xl">
+                <Pagination
+                  total={postsTotalPages}
+                  value={postsPage}
+                  onChange={setPostsPage}
+                />
+              </Group>
           )}
         </Container>
       </div>
