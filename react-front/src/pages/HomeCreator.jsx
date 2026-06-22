@@ -97,7 +97,7 @@ export default function HomeCreator() {
     try {
       const res = await api.get(`/creators/${creatorId}/posts`);
       console.log('Posts response:', res.data);
-      setPosts(res.data.objave || []);
+      setPosts(res.data.objave?.data || []);
     } catch (err) {
       notifications.show({ title: "Greška", message: "Ne mogu da učitam objave", color: "red" });
     }
